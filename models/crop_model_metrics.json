@@ -1,19 +1,29 @@
 {
-  "accuracy": 0.9931818181818182,
-  "macro_f1": 0.9931775541531639,
-  "weighted_f1": 0.9931775541531639,
+  "accuracy": 0.9954545454545455,
+  "macro_f1": 0.9954517027687758,
+  "weighted_f1": 0.9954517027687759,
   "n_samples": 2200,
   "n_classes": 22,
-  "features": [
+  "model_features": [
     "N",
     "P",
     "K",
-    "temperature",
     "humidity",
-    "ph",
     "rainfall"
   ],
-  "created_at": "2026-02-13T13:34:59.193713+00:00",
+  "personalization_features": [
+    "farm_size",
+    "season",
+    "previous_crop"
+  ],
+  "feature_importance": {
+    "N": 0.11437314941695169,
+    "P": 0.16480038836419697,
+    "K": 0.19460818833372898,
+    "humidity": 0.2450900842262877,
+    "rainfall": 0.28112818965883474
+  },
+  "created_at": "2026-03-23T03:43:25.903153+00:00",
   "classification_report": {
     "apple": {
       "precision": 1.0,
@@ -77,8 +87,8 @@
     },
     "lentil": {
       "precision": 1.0,
-      "recall": 0.95,
-      "f1-score": 0.9743589743589743,
+      "recall": 1.0,
+      "f1-score": 1.0,
       "support": 20.0
     },
     "maize": {
@@ -94,9 +104,9 @@
       "support": 20.0
     },
     "mothbeans": {
-      "precision": 0.9523809523809523,
+      "precision": 1.0,
       "recall": 1.0,
-      "f1-score": 0.975609756097561,
+      "f1-score": 1.0,
       "support": 20.0
     },
     "mungbean": {
@@ -147,17 +157,17 @@
       "f1-score": 1.0,
       "support": 20.0
     },
-    "accuracy": 0.9931818181818182,
+    "accuracy": 0.9954545454545455,
     "macro avg": {
-      "precision": 0.9935064935064936,
-      "recall": 0.993181818181818,
-      "f1-score": 0.9931775541531639,
+      "precision": 0.9956709956709957,
+      "recall": 0.9954545454545454,
+      "f1-score": 0.9954517027687758,
       "support": 440.0
     },
     "weighted avg": {
-      "precision": 0.9935064935064934,
-      "recall": 0.9931818181818182,
-      "f1-score": 0.9931775541531639,
+      "precision": 0.9956709956709956,
+      "recall": 0.9954545454545455,
+      "f1-score": 0.9954517027687759,
       "support": 440.0
     }
   }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HTTP API for crop recommendation using ml/recommend_crop.py inference logic."""
+"""Flask API wrapper for the crop recommendation pipeline."""
 
 from __future__ import annotations
 
@@ -76,6 +76,11 @@ def health() -> tuple[object, int]:
     )
 
 
+@app.get("/api/health")
+def api_health() -> tuple[object, int]:
+    return health()
+
+
 @app.post("/api/recommend")
 def recommend() -> tuple[object, int]:
     if not request.is_json:
@@ -105,3 +110,4 @@ def recommend() -> tuple[object, int]:
 
 if __name__ == "__main__":
     app.run(host=HOST, port=PORT, debug=DEBUG)
+

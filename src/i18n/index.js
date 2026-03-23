@@ -8,6 +8,11 @@ import ta from './locales/ta.json'
 import te from './locales/te.json'
 import gu from './locales/gu.json'
 
+const initialLanguage =
+  typeof window !== 'undefined'
+    ? (window.localStorage.getItem('i18nextLng') || 'hi').split('-')[0]
+    : 'hi'
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -22,9 +27,10 @@ i18n
     supportedLngs: ['en', 'hi', 'ta', 'te', 'gu'],
     nonExplicitSupportedLngs: true,
     load: 'languageOnly',
-    fallbackLng: 'en',
+    lng: initialLanguage,
+    fallbackLng: ['hi', 'en'],
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['localStorage', 'htmlTag'],
       caches: ['localStorage'],
     },
     interpolation: { escapeValue: false },

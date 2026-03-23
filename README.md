@@ -1,11 +1,11 @@
 # 🌱 Smartकृषि - AI-Powered Crop Recommendation
 
-Smartकृषि recommends crops using a trained ML model and then personalizes advisory output based on farm context.
+Smartकृषि recommends crops using a trained ML model and then personalizes the ranking with farm context through a Flask API.
 
 ## Features
 
-- Crop recommendation using ML (`N, P, K, temperature, humidity, ph, rainfall`)
-- Personalized advisory re-ranking (`farm_size, previous_crop, season`)
+- Crop recommendation using ML (`N, P, K, humidity, rainfall`)
+- Prediction-time personalization (`farm_size, previous_crop, season`)
 - Live weather inputs from Open-Meteo (temperature, humidity, rainfall)
 - Farming guidance cards (irrigation, fertilizer, pest, weather tips)
 - Disease detection demo page
@@ -91,6 +91,7 @@ Vite proxies `/api/*` to the API server in development.
 ## API
 
 - `GET /health`
+- `GET /api/health`
 - `POST /api/recommend?top_k=5`
 
 Sample body:
@@ -100,12 +101,18 @@ Sample body:
   "N": 90,
   "P": 42,
   "K": 43,
-  "temperature": 24,
   "humidity": 80,
-  "ph": 6.5,
   "rainfall": 210,
+  "temperature": 24,
+  "ph": 6.5,
   "farm_size": 2.5,
   "previous_crop": "rice",
   "season": "kharif"
 }
 ```
+
+Notes:
+
+- The trained model uses `N`, `P`, `K`, `humidity`, and `rainfall`.
+- `farm_size`, `season`, and `previous_crop` are applied during inference to personalize the ranked recommendations.
+- `temperature` and `ph` are still accepted by the API so the existing frontend flow can keep using them for UI/advisory context.

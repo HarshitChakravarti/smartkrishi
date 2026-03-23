@@ -118,7 +118,7 @@ export default function DiseaseDetection() {
             </div>
           </label>
           <div className="mt-4">
-            <PrimaryButton onClick={handleAnalyze} disabled={!imagePreview || isAnalyzing}>
+            <PrimaryButton onClick={handleAnalyze} disabled={!imagePreview || isAnalyzing} className="w-full">
               {isAnalyzing
                 ? `🔎 ${t('disease.checking')}`
                 : `🔎 ${t('disease.check')}`}
@@ -132,7 +132,7 @@ export default function DiseaseDetection() {
               {t('disease.result')}
             </div>
             <div className="mt-2 text-3xl sm:text-4xl font-extrabold text-agri-green">
-              {t(result.disease)}
+              {t(result.diseaseKey)}
             </div>
             <div className="mt-5">
               <div className="text-2xl font-extrabold text-gray-900">
@@ -156,7 +156,7 @@ export default function DiseaseDetection() {
         ) : null}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <SecondaryButton onClick={() => navigate('/')}>
+          <SecondaryButton onClick={() => navigate('/')} className="w-full">
             🏠 {t('common.home')}
           </SecondaryButton>
           <PrimaryButton
@@ -165,6 +165,7 @@ export default function DiseaseDetection() {
               setImagePreview(null)
               setResult(null)
             }}
+            className="w-full"
           >
             🔄 {t('disease.newPhoto')}
           </PrimaryButton>

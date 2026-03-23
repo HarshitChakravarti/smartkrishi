@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Run personalized crop recommendations using trained model + advisory re-ranking.
-
-Stage 1: ML model predicts base probabilities from soil/weather features.
-Stage 2: Advisory layer adjusts scores using season, farm_size, and previous_crop.
-"""
+"""Predict crops using a trained classifier plus contextual personalization."""
 
 from __future__ import annotations
 
@@ -19,11 +15,14 @@ import numpy as np
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+MODEL_FEATURES = ["N", "P", "K", "humidity", "rainfall"]
+OPTIONAL_NUMERIC_FIELDS = {
+    "temperature": (-20.0, 60.0),
+    "ph": (0.0, 14.0),
+}
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "models/crop_model.joblib"
 DEFAULT_TOP_K = 5
 
-# Approximate season suitability for Indian conditions.
 SEASON_MAP = {
     "kharif": {
         "rice",
@@ -47,6 +46,7 @@ SEASON_MAP = {
         "grapes",
         "coffee",
         "pomegranate",
+        "wheat",
     },
     "zaid": {
         "watermelon",
@@ -55,12 +55,14 @@ SEASON_MAP = {
         "banana",
         "mango",
         "pomegranate",
+        "maize",
     },
 }
 
 CROP_FAMILY = {
     "rice": "cereal",
     "maize": "cereal",
+    "wheat": "cereal",
     "chickpea": "legume",
     "kidneybeans": "legume",
     "pigeonpeas": "legume",
@@ -81,6 +83,7 @@ CROP_FAMILY = {
     "pomegranate": "fruit",
     "coconut": "fruit",
     "coffee": "beverage",
+    "sugarcane": "cash",
 }
 
 SMALL_FARM_FRIENDLY = {
@@ -99,6 +102,7 @@ SMALL_FARM_FRIENDLY = {
 LARGE_FARM_FRIENDLY = {
     "rice",
     "maize",
+    "wheat",
     "cotton",
     "jute",
     "banana",
@@ -107,19 +111,17 @@ LARGE_FARM_FRIENDLY = {
 }
 
 NUMERIC_BOUNDS = {
-    "N": (0, 300),
-    "P": (0, 300),
-    "K": (0, 300),
-    "temperature": (-20, 60),
-    "humidity": (0, 100),
-    "ph": (0, 14),
-    "rainfall": (0, 500),
-    "farm_size": (0.1, 2000),
+    "N": (0.0, 300.0),
+    "P": (0.0, 300.0),
+    "K": (0.0, 300.0),
+    "humidity": (0.0, 100.0),
+    "rainfall": (0.0, 500.0),
+    "farm_size": (0.1, 2000.0),
 }
 
 
 class RecommendationInputError(ValueError):
-    """Raised when request payload is invalid."""
+    """Raised when the request payload is invalid."""
 
 
 @lru_cache(maxsize=4)
@@ -127,13 +129,13 @@ def load_model_bundle(model_path: str) -> dict[str, Any]:
     path = Path(model_path)
     if not path.exists():
         raise FileNotFoundError(f"Model file not found: {path}")
+
     try:
         bundle = joblib.load(path)
-    except ModuleNotFoundError as exc:
-        # Common when a model was trained under a different NumPy/Sklearn build.
+    except Exception as exc:  # pragma: no cover
         raise RuntimeError(
-            "Model artifact is incompatible with current Python ML runtime "
-            f"({exc}). Rebuild model with: npm run train:model"
+            "Model artifact could not be loaded in the current Python ML runtime. "
+            "Rebuild it with: npm run train:model"
         ) from exc
 
     required_bundle_keys = {"model", "feature_columns", "classes", "metadata"}
@@ -150,39 +152,60 @@ def parse_args() -> argparse.Namespace:
         "--model",
         type=Path,
         default=DEFAULT_MODEL_PATH,
-        help="Path to trained model bundle",
+        help="Path to the trained model bundle",
     )
     parser.add_argument(
         "--input-json",
         type=str,
         help=(
-            "JSON input with keys: N,P,K,temperature,humidity,ph,rainfall,"
+            "JSON input with keys: N,P,K,humidity,rainfall,"
             "farm_size,previous_crop,season"
         ),
     )
     parser.add_argument(
         "--input-file",
         type=Path,
-        help="Path to JSON file containing request payload",
+        help="Path to a JSON file containing the request payload",
     )
-    parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K, help="Top K crops to return")
+    parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K, help="Number of crops to return")
     return parser.parse_args()
 
 
 def _to_float(payload: dict[str, Any], key: str) -> float:
     if key not in payload:
         raise RecommendationInputError(f"Missing required field: {key}")
+
     value = payload[key]
     try:
         numeric = float(value)
     except (TypeError, ValueError) as exc:
         raise RecommendationInputError(f"Field '{key}' must be numeric") from exc
 
-    min_v, max_v = NUMERIC_BOUNDS[key]
-    if numeric < min_v or numeric > max_v:
+    min_value, max_value = NUMERIC_BOUNDS[key]
+    if numeric < min_value or numeric > max_value:
         raise RecommendationInputError(
-            f"Field '{key}' out of range [{min_v}, {max_v}]: {numeric}"
+            f"Field '{key}' out of range [{min_value}, {max_value}]: {numeric}"
         )
+
+    return numeric
+
+
+def _to_optional_float(payload: dict[str, Any], key: str) -> float | None:
+    if key not in payload or payload[key] in ("", None):
+        return None
+
+    value = payload[key]
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError) as exc:
+        raise RecommendationInputError(f"Field '{key}' must be numeric") from exc
+
+    min_value, max_value = OPTIONAL_NUMERIC_FIELDS[key]
+    if numeric < min_value or numeric > max_value:
+        raise RecommendationInputError(
+            f"Field '{key}' out of range [{min_value}, {max_value}]: {numeric}"
+        )
+
     return numeric
 
 
@@ -192,25 +215,36 @@ def _normalize_season(raw: Any) -> str:
 
 
 def _normalize_previous_crop(raw: Any) -> str:
-    prev = str(raw if raw is not None else "none").lower().strip()
-    return prev if prev else "none"
+    previous_crop = str(raw if raw is not None else "none").lower().strip()
+    return previous_crop or "none"
 
 
 def validate_and_prepare_payload(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise RecommendationInputError("Payload must be a JSON object")
 
-    prepared = {feature: _to_float(payload, feature) for feature in FEATURES}
-    prepared["farm_size"] = float(payload.get("farm_size", 2.0))
+    prepared = {feature: _to_float(payload, feature) for feature in MODEL_FEATURES}
 
-    min_v, max_v = NUMERIC_BOUNDS["farm_size"]
-    if prepared["farm_size"] < min_v or prepared["farm_size"] > max_v:
+    try:
+        farm_size = float(payload.get("farm_size", 2.0))
+    except (TypeError, ValueError) as exc:
+        raise RecommendationInputError("Field 'farm_size' must be numeric") from exc
+
+    min_value, max_value = NUMERIC_BOUNDS["farm_size"]
+    if farm_size < min_value or farm_size > max_value:
         raise RecommendationInputError(
-            f"Field 'farm_size' out of range [{min_v}, {max_v}]: {prepared['farm_size']}"
+            f"Field 'farm_size' out of range [{min_value}, {max_value}]: {farm_size}"
         )
 
-    prepared["previous_crop"] = _normalize_previous_crop(payload.get("previous_crop", "none"))
+    prepared["farm_size"] = farm_size
     prepared["season"] = _normalize_season(payload.get("season", "kharif"))
+    prepared["previous_crop"] = _normalize_previous_crop(payload.get("previous_crop", "none"))
+
+    for key in OPTIONAL_NUMERIC_FIELDS:
+        value = _to_optional_float(payload, key)
+        if value is not None:
+            prepared[key] = value
+
     return prepared
 
 
@@ -223,20 +257,18 @@ def farm_size_bucket(farm_size: float) -> str:
 
 
 def season_weight(crop: str, season: str) -> float:
-    if season not in SEASON_MAP:
-        return 1.0
-    return 1.15 if crop in SEASON_MAP[season] else 0.85
+    return 1.15 if crop in SEASON_MAP.get(season, set()) else 0.85
 
 
 def rotation_weight(crop: str, previous_crop: str) -> float:
-    if not previous_crop or previous_crop == "none":
+    if previous_crop == "none":
         return 1.0
     if crop == previous_crop:
         return 0.60
 
     crop_family = CROP_FAMILY.get(crop)
-    prev_family = CROP_FAMILY.get(previous_crop)
-    if crop_family and prev_family and crop_family == prev_family:
+    previous_family = CROP_FAMILY.get(previous_crop)
+    if crop_family and previous_family and crop_family == previous_family:
         return 0.85
     return 1.05
 
@@ -252,35 +284,40 @@ def farm_size_weight(crop: str, farm_size: float) -> float:
 
 def personalize_scores(
     classes: list[str],
-    base_probs: np.ndarray,
+    base_probabilities: np.ndarray,
     farm_size: float,
     previous_crop: str,
     season: str,
 ) -> list[dict[str, Any]]:
     rows = []
-    for idx, crop in enumerate(classes):
-        base = float(base_probs[idx])
-        w_season = season_weight(crop, season)
-        w_rotation = rotation_weight(crop, previous_crop)
-        w_farm = farm_size_weight(crop, farm_size)
+    for index, crop in enumerate(classes):
+        base_probability = float(base_probabilities[index])
+        current_season_weight = season_weight(crop, season)
+        current_rotation_weight = rotation_weight(crop, previous_crop)
+        current_farm_size_weight = farm_size_weight(crop, farm_size)
 
-        final_score = base * w_season * w_rotation * w_farm
+        final_score = (
+            base_probability
+            * current_season_weight
+            * current_rotation_weight
+            * current_farm_size_weight
+        )
         rows.append(
             {
                 "crop": crop,
-                "base_probability": base,
-                "season_weight": w_season,
-                "rotation_weight": w_rotation,
-                "farm_size_weight": w_farm,
+                "base_probability": base_probability,
+                "season_weight": current_season_weight,
+                "rotation_weight": current_rotation_weight,
+                "farm_size_weight": current_farm_size_weight,
                 "final_score": final_score,
             }
         )
 
-    total = sum(r["final_score"] for r in rows)
-    for r in rows:
-        r["personalized_probability"] = r["final_score"] / total if total > 0 else 0.0
+    total_score = sum(row["final_score"] for row in rows)
+    for row in rows:
+        row["personalized_probability"] = row["final_score"] / total_score if total_score > 0 else 0.0
 
-    rows.sort(key=lambda x: x["personalized_probability"], reverse=True)
+    rows.sort(key=lambda row: row["personalized_probability"], reverse=True)
     return rows
 
 
@@ -296,19 +333,19 @@ def predict_recommendation(
 
     bundle = load_model_bundle(str(model_path))
     model = bundle["model"]
-    feature_columns = bundle["feature_columns"]
+    feature_columns = list(bundle["feature_columns"])
     classes = list(bundle["classes"])
     metadata = bundle.get("metadata", {})
 
-    x = pd.DataFrame(
-        [{col: float(prepared[col]) for col in feature_columns}],
+    frame = pd.DataFrame(
+        [{column: float(prepared[column]) for column in feature_columns}],
         columns=feature_columns,
     )
-    base_probs = model.predict_proba(x)[0]
+    base_probabilities = model.predict_proba(frame)[0]
 
     personalized_rows = personalize_scores(
         classes=classes,
-        base_probs=base_probs,
+        base_probabilities=base_probabilities,
         farm_size=prepared["farm_size"],
         previous_crop=prepared["previous_crop"],
         season=prepared["season"],
@@ -317,14 +354,14 @@ def predict_recommendation(
     base_rows = [
         {
             "crop": crop,
-            "base_probability": float(base_probs[idx]),
+            "base_probability": float(base_probabilities[index]),
         }
-        for idx, crop in enumerate(classes)
+        for index, crop in enumerate(classes)
     ]
-    base_rows.sort(key=lambda r: r["base_probability"], reverse=True)
+    base_rows.sort(key=lambda row: row["base_probability"], reverse=True)
 
     limit = min(top_k, len(personalized_rows))
-    output = {
+    return {
         "input": prepared,
         "best_crop": personalized_rows[0]["crop"],
         "best_base_crop": base_rows[0]["crop"],
@@ -333,11 +370,14 @@ def predict_recommendation(
         "model_metadata": {
             "dataset": metadata.get("dataset"),
             "created_at": metadata.get("created_at"),
-            "feature_columns": metadata.get("feature_columns", feature_columns),
+            "feature_columns": metadata.get("model_features", feature_columns),
+            "personalization_features": metadata.get(
+                "personalization_features",
+                ["farm_size", "season", "previous_crop"],
+            ),
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
-    return output
 
 
 def _read_payload(args: argparse.Namespace) -> dict[str, Any]:
@@ -346,18 +386,16 @@ def _read_payload(args: argparse.Namespace) -> dict[str, Any]:
 
     if args.input_json:
         try:
-            payload = json.loads(args.input_json)
+            return json.loads(args.input_json)
         except json.JSONDecodeError as exc:
             raise RecommendationInputError(f"Invalid JSON in --input-json: {exc}") from exc
-    else:
-        try:
-            payload = json.loads(args.input_file.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            raise RecommendationInputError(f"Input file not found: {args.input_file}") from exc
-        except json.JSONDecodeError as exc:
-            raise RecommendationInputError(f"Invalid JSON in file {args.input_file}: {exc}") from exc
 
-    return payload
+    try:
+        return json.loads(args.input_file.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise RecommendationInputError(f"Input file not found: {args.input_file}") from exc
+    except json.JSONDecodeError as exc:
+        raise RecommendationInputError(f"Invalid JSON in file {args.input_file}: {exc}") from exc
 
 
 def main() -> None:
