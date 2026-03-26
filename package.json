@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "api": "python3 ml/api_server.py",
-    "train:model": "python3 ml/train_crop_model.py --data \"dataset/Crop_recommendation 2.csv\" --model-out models/crop_model.joblib --metrics-out models/crop_model_metrics.json",
+    "train:model": "python3 ml/train_model.py",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

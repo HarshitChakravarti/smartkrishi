@@ -1,0 +1,18 @@
+{
+  "India": {"January": 19.0, "February": 22.0, "March": 26.0, "April": 30.0, "May": 33.0, "June": 31.0, "July": 28.0, "August": 27.5, "September": 27.0, "October": 26.0, "November": 23.0, "December": 20.0},
+  "Maharashtra": {"January": 24.0, "February": 26.0, "March": 29.0, "April": 32.0, "May": 34.0, "June": 30.0, "July": 27.0, "August": 26.5, "September": 27.0, "October": 28.0, "November": 26.0, "December": 24.0},
+  "Punjab": {"January": 13.0, "February": 16.0, "March": 22.0, "April": 29.0, "May": 35.0, "June": 34.0, "July": 30.0, "August": 29.0, "September": 28.0, "October": 24.0, "November": 18.0, "December": 14.0},
+  "Haryana": {"January": 12.0, "February": 15.0, "March": 21.0, "April": 28.0, "May": 34.0, "June": 34.0, "July": 30.0, "August": 29.0, "September": 28.0, "October": 24.0, "November": 18.0, "December": 13.0},
+  "Uttar Pradesh": {"January": 14.0, "February": 18.0, "March": 24.0, "April": 31.0, "May": 35.0, "June": 34.0, "July": 30.0, "August": 29.0, "September": 29.0, "October": 27.0, "November": 21.0, "December": 16.0},
+  "Madhya Pradesh": {"January": 17.0, "February": 21.0, "March": 27.0, "April": 33.0, "May": 36.0, "June": 33.0, "July": 28.0, "August": 27.0, "September": 27.5, "October": 26.0, "November": 21.0, "December": 17.5},
+  "Rajasthan": {"January": 15.0, "February": 19.0, "March": 26.0, "April": 33.0, "May": 38.0, "June": 37.0, "July": 33.0, "August": 31.0, "September": 31.0, "October": 28.0, "November": 21.0, "December": 16.0},
+  "Gujarat": {"January": 21.0, "February": 24.0, "March": 29.0, "April": 33.0, "May": 36.0, "June": 33.0, "July": 30.0, "August": 29.5, "September": 30.0, "October": 30.0, "November": 26.0, "December": 22.0},
+  "Karnataka": {"January": 23.0, "February": 25.0, "March": 28.0, "April": 30.0, "May": 30.0, "June": 27.0, "July": 25.5, "August": 25.0, "September": 25.5, "October": 24.5, "November": 23.5, "December": 22.5},
+  "Tamil Nadu": {"January": 24.0, "February": 26.0, "March": 29.0, "April": 32.0, "May": 34.0, "June": 33.0, "July": 32.0, "August": 31.5, "September": 30.5, "October": 29.0, "November": 27.0, "December": 25.0},
+  "Kerala": {"January": 27.0, "February": 28.0, "March": 29.0, "April": 29.5, "May": 29.0, "June": 27.0, "July": 26.0, "August": 26.0, "September": 26.5, "October": 27.0, "November": 27.5, "December": 27.0},
+  "West Bengal": {"January": 20.0, "February": 23.0, "March": 27.0, "April": 30.0, "May": 32.0, "June": 31.0, "July": 29.0, "August": 28.5, "September": 28.5, "October": 27.0, "November": 24.0, "December": 21.0},
+  "Bihar": {"January": 15.0, "February": 19.0, "March": 25.0, "April": 31.0, "May": 34.0, "June": 33.0, "July": 30.0, "August": 29.0, "September": 29.0, "October": 27.0, "November": 22.0, "December": 17.0},
+  "Odisha": {"January": 21.0, "February": 24.0, "March": 28.0, "April": 32.0, "May": 34.0, "June": 31.0, "July": 28.5, "August": 28.0, "September": 28.5, "October": 28.0, "November": 25.0, "December": 22.0},
+  "Andhra Pradesh": {"January": 24.0, "February": 26.0, "March": 29.0, "April": 33.0, "May": 35.0, "June": 32.0, "July": 30.0, "August": 29.5, "September": 29.5, "October": 29.0, "November": 27.0, "December": 24.5},
+  "Telangana": {"January": 23.0, "February": 26.0, "March": 30.0, "April": 34.0, "May": 36.0, "June": 32.0, "July": 28.5, "August": 28.0, "September": 28.5, "October": 28.0, "November": 25.0, "December": 22.5}
+}

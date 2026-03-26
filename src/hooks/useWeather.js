@@ -6,6 +6,7 @@ const DEFAULT_LON = 77.209
 const DEFAULT_LABEL = 'Delhi, India'
 
 const OPEN_METEO_URL = 'https://api.open-meteo.com/v1/forecast'
+const OPEN_METEO_GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 
 function buildUrl(lat, lon) {
   const params = new URLSearchParams({
@@ -17,7 +18,35 @@ function buildUrl(lat, lon) {
   return `${OPEN_METEO_URL}?${params.toString()}`
 }
 
-export function useWeather() {
+async function resolveLocationByName(placeName) {
+  const params = new URLSearchParams({
+    name: placeName,
+    count: '1',
+    language: 'en',
+    format: 'json',
+  })
+
+  const res = await fetch(`${OPEN_METEO_GEOCODING_URL}?${params.toString()}`)
+  if (!res.ok) {
+    throw new Error('Location lookup failed')
+  }
+
+  const json = await res.json()
+  const first = json?.results?.[0]
+  if (!first) {
+    throw new Error('Location not found')
+  }
+
+  const parts = [first.name, first.admin1, first.country].filter(Boolean)
+  return {
+    lat: first.latitude,
+    lon: first.longitude,
+    locationLabel: parts.join(', ') || placeName,
+  }
+}
+
+export function useWeather(options = {}) {
+  const { useGeolocation = true, placeName = '' } = options
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -55,6 +84,39 @@ export function useWeather() {
   }, [])
 
   useEffect(() => {
+    if (!useGeolocation) {
+      if (!placeName) {
+        fetchWeather(DEFAULT_LAT, DEFAULT_LON, {
+          locationLabel: DEFAULT_LABEL,
+          source: 'fallback',
+        })
+        return
+      }
+
+      let cancelled = false
+      async function runPlaceLookup() {
+        try {
+          const resolved = await resolveLocationByName(placeName)
+          if (cancelled) return
+          await fetchWeather(resolved.lat, resolved.lon, {
+            locationLabel: resolved.locationLabel,
+            source: 'selected_location',
+          })
+        } catch {
+          if (cancelled) return
+          fetchWeather(DEFAULT_LAT, DEFAULT_LON, {
+            locationLabel: DEFAULT_LABEL,
+            source: 'fallback',
+          })
+        }
+      }
+
+      runPlaceLookup()
+      return () => {
+        cancelled = true
+      }
+    }
+
     if (!navigator.geolocation) {
       fetchWeather(DEFAULT_LAT, DEFAULT_LON, {
         locationLabel: DEFAULT_LABEL,
@@ -79,7 +141,7 @@ export function useWeather() {
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     )
-  }, [fetchWeather])
+  }, [fetchWeather, placeName, useGeolocation])
 
   const refetch = useCallback(() => {
     fetchWeather(coords.lat, coords.lon, {

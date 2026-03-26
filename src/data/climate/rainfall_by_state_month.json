@@ -1,0 +1,18 @@
+{
+  "India": {"January": 20, "February": 18, "March": 15, "April": 20, "May": 35, "June": 150, "July": 280, "August": 260, "September": 180, "October": 70, "November": 25, "December": 15},
+  "Maharashtra": {"January": 10, "February": 8, "March": 7, "April": 10, "May": 25, "June": 170, "July": 300, "August": 280, "September": 190, "October": 85, "November": 30, "December": 12},
+  "Punjab": {"January": 22, "February": 24, "March": 18, "April": 10, "May": 18, "June": 80, "July": 210, "August": 190, "September": 110, "October": 25, "November": 8, "December": 15},
+  "Haryana": {"January": 20, "February": 20, "March": 16, "April": 9, "May": 16, "June": 70, "July": 190, "August": 170, "September": 95, "October": 20, "November": 7, "December": 12},
+  "Uttar Pradesh": {"January": 25, "February": 22, "March": 15, "April": 8, "May": 20, "June": 95, "July": 280, "August": 260, "September": 170, "October": 35, "November": 10, "December": 14},
+  "Madhya Pradesh": {"January": 12, "February": 10, "March": 8, "April": 7, "May": 12, "June": 110, "July": 310, "August": 280, "September": 160, "October": 40, "November": 15, "December": 10},
+  "Rajasthan": {"January": 8, "February": 6, "March": 4, "April": 3, "May": 8, "June": 45, "July": 160, "August": 145, "September": 70, "October": 12, "November": 5, "December": 6},
+  "Gujarat": {"January": 5, "February": 4, "March": 3, "April": 2, "May": 7, "June": 95, "July": 260, "August": 240, "September": 140, "October": 35, "November": 8, "December": 4},
+  "Karnataka": {"January": 4, "February": 6, "March": 12, "April": 35, "May": 70, "June": 125, "July": 180, "August": 170, "September": 165, "October": 140, "November": 65, "December": 22},
+  "Tamil Nadu": {"January": 22, "February": 14, "March": 12, "April": 20, "May": 45, "June": 60, "July": 85, "August": 95, "September": 110, "October": 190, "November": 230, "December": 110},
+  "Kerala": {"January": 24, "February": 25, "March": 40, "April": 110, "May": 250, "June": 620, "July": 700, "August": 430, "September": 290, "October": 300, "November": 180, "December": 65},
+  "West Bengal": {"January": 14, "February": 24, "March": 35, "April": 65, "May": 145, "June": 280, "July": 330, "August": 300, "September": 260, "October": 120, "November": 20, "December": 8},
+  "Bihar": {"January": 12, "February": 14, "March": 10, "April": 8, "May": 20, "June": 160, "July": 290, "August": 270, "September": 210, "October": 65, "November": 12, "December": 8},
+  "Odisha": {"January": 16, "February": 18, "March": 22, "April": 30, "May": 55, "June": 210, "July": 360, "August": 340, "September": 280, "October": 170, "November": 45, "December": 18},
+  "Andhra Pradesh": {"January": 8, "February": 10, "March": 15, "April": 22, "May": 45, "June": 115, "July": 170, "August": 165, "September": 175, "October": 190, "November": 120, "December": 40},
+  "Telangana": {"January": 6, "February": 8, "March": 12, "April": 18, "May": 35, "June": 130, "July": 220, "August": 210, "September": 170, "October": 90, "November": 20, "December": 8}
+}

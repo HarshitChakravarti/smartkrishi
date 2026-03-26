@@ -1,113 +1,80 @@
-#!/usr/bin/env python3
-"""Flask API wrapper for the crop recommendation pipeline."""
+"""FastAPI server for SmartKrishi AI crop recommendation pipeline."""
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
+import logging
 
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 try:
-    from .recommend_crop import (
-        DEFAULT_MODEL_PATH,
-        DEFAULT_TOP_K,
-        RecommendationInputError,
-        load_model_bundle,
-        predict_recommendation,
-    )
-except ImportError:  # Allows `python3 ml/api_server.py`
-    from recommend_crop import (  # type: ignore
-        DEFAULT_MODEL_PATH,
-        DEFAULT_TOP_K,
-        RecommendationInputError,
-        load_model_bundle,
-        predict_recommendation,
-    )
+    from .config import API_HOST, API_PORT, CORS_ORIGINS
+    from .model import load_model
+    from .pipeline import get_recommendations
+    from .schemas import PredictionRequest, PredictionResponse
+except ImportError:  # pragma: no cover
+    from config import API_HOST, API_PORT, CORS_ORIGINS  # type: ignore
+    from model import load_model  # type: ignore
+    from pipeline import get_recommendations  # type: ignore
+    from schemas import PredictionRequest, PredictionResponse  # type: ignore
 
-MODEL_PATH = Path(os.getenv("CROP_MODEL_PATH", str(DEFAULT_MODEL_PATH)))
-DEFAULT_API_TOP_K = int(os.getenv("CROP_TOP_K", str(DEFAULT_TOP_K)))
-HOST = os.getenv("CROP_API_HOST", "127.0.0.1")
-PORT = int(os.getenv("CROP_API_PORT", "8000"))
-DEBUG = os.getenv("CROP_API_DEBUG", "false").lower() == "true"
+app = FastAPI(
+    title="SmartKrishi AI API",
+    description="Crop recommendation engine for Indian farmers",
+    version="1.0.0",
+)
 
-app = Flask(__name__)
-CORS(app)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
-@app.get("/health")
-def health() -> tuple[object, int]:
-    if not MODEL_PATH.exists():
-        return (
-            jsonify(
-                {
-                    "status": "error",
-                    "model_path": str(MODEL_PATH),
-                    "error": "Model file is missing. Run: npm run train:model",
-                }
-            ),
-            500,
-        )
-
+@app.post("/api/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """Accept exact InputForm.jsx payload and return top crop recommendations."""
     try:
-        load_model_bundle(str(MODEL_PATH))
-    except Exception as exc:
-        return (
-            jsonify(
-                {
-                    "status": "error",
-                    "model_path": str(MODEL_PATH),
-                    "error": str(exc),
-                }
-            ),
-            500,
-        )
-
-    return (
-        jsonify(
-            {
-                "status": "ok",
-                "model_path": str(MODEL_PATH),
-                "model_ready": True,
-            }
-        ),
-        200,
-    )
+        return get_recommendations(request.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover
+        logging.exception("Prediction failed")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "success": False,
+                "error": str(exc),
+                "code": "PREDICTION_ERROR",
+            },
+        ) from exc
 
 
 @app.get("/api/health")
-def api_health() -> tuple[object, int]:
-    return health()
-
-
-@app.post("/api/recommend")
-def recommend() -> tuple[object, int]:
-    if not request.is_json:
-        return jsonify({"error": "Content-Type must be application/json"}), 400
-
-    payload = request.get_json(silent=True)
-    if payload is None:
-        return jsonify({"error": "Invalid JSON body"}), 400
-
-    top_k_raw = request.args.get("top_k", str(DEFAULT_API_TOP_K))
+async def health():
+    """Simple health check that verifies model artifacts can be loaded."""
     try:
-        top_k = int(top_k_raw)
-    except ValueError:
-        return jsonify({"error": "top_k must be an integer"}), 400
-
-    try:
-        result = predict_recommendation(payload=payload, model_path=MODEL_PATH, top_k=top_k)
-    except RecommendationInputError as exc:
-        return jsonify({"error": str(exc)}), 400
-    except FileNotFoundError as exc:
-        return jsonify({"error": str(exc)}), 500
+        _, _, encoder = load_model()
+        return {
+            "status": "healthy",
+            "model_loaded": True,
+            "crop_classes": len(encoder.classes_),
+            "version": "1.0.0",
+        }
     except Exception as exc:  # pragma: no cover
-        return jsonify({"error": f"Unexpected error: {exc}"}), 500
-
-    return jsonify(result), 200
+        return {
+            "status": "degraded",
+            "model_loaded": False,
+            "error": str(exc),
+        }
 
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    import uvicorn
+
+    uvicorn.run("api_server:app", host=API_HOST, port=API_PORT, reload=True)
 

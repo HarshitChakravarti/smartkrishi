@@ -1,0 +1,9 @@
+{
+  "cereals": ["rice", "maize", "wheat", "millet", "millets"],
+  "legumes": ["chickpea", "kidneybeans", "pigeonpeas", "mothbeans", "mungbean", "blackgram", "lentil"],
+  "fiber": ["cotton", "jute"],
+  "fruit": ["banana", "mango", "grapes", "watermelon", "muskmelon", "apple", "orange", "papaya", "pomegranate", "coconut"],
+  "cash": ["sugarcane", "coffee"],
+  "oilseed": ["mustard", "groundnut", "soybean", "castor"],
+  "spice": ["chilli"]
+}

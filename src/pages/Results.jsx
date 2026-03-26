@@ -1,19 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Layout from '../components/Layout'
-import {
-  AccordionSection,
-  Badge,
-  Card,
-  MetricTile,
-  PrimaryButton,
-  SecondaryButton,
-  SectionHeading,
-  SkeletonBlock,
-} from '../components/ui'
-import { fetchCropRecommendation } from '../lib/cropApi'
-import { buildAdvisory } from '../lib/advisory'
+import MinistryNavbar from '../components/MinistryNavbar'
+import { getCropRecommendation } from '../lib/cropApi'
 
 function readStorage(key, fallback) {
   try {
@@ -24,35 +13,90 @@ function readStorage(key, fallback) {
   }
 }
 
+function formatConfidence(decimal) {
+  return `${Math.round(Number(decimal || 0) * 100)}%`
+}
+
+function capitalizeCrop(name) {
+  if (!name) return '--'
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
+
+function formatSource(source) {
+  const map = {
+    live_weather: 'Live Weather',
+    historical_average: 'Historical Average',
+  }
+  return map[source] || source || '--'
+}
+
+function monthWindowLabel(months = []) {
+  if (!months.length) return '--'
+  if (months.length === 1) return months[0]
+  return `${months[0]} -> ${months[months.length - 1]}`
+}
+
+function safeHistoryWrite(entry) {
+  try {
+    const raw = window.localStorage.getItem('smartkrishiHistory')
+    const parsed = raw ? JSON.parse(raw) : []
+    const existing = Array.isArray(parsed) ? parsed : []
+    const nextHistory = [entry, ...existing].slice(0, 5)
+    window.localStorage.setItem('smartkrishiHistory', JSON.stringify(nextHistory))
+  } catch {
+    // If localStorage is unavailable, don't block results rendering.
+  }
+}
+
 export default function Results() {
   const navigate = useNavigate()
-  const { t } = useTranslation()
-  const [apiResult, setApiResult] = useState(null)
-  const [requestData, setRequestData] = useState(null)
+  const { t, i18n } = useTranslation()
+
+  const isHindi = (i18n.resolvedLanguage || i18n.language || 'hi').startsWith('hi')
+
+  const [result, setResult] = useState(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [expandedAdvisory, setExpandedAdvisory] = useState(0)
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [reloadKey, setReloadKey] = useState(0)
+
+  const loadingMessages = useMemo(
+    () => ['Evaluating crops...', 'Checking seasonal fit...', 'Analyzing soil profile...', 'Computing recommendations...'],
+    [],
+  )
 
   useEffect(() => {
     let isActive = true
 
     async function runPrediction() {
+      setLoading(true)
       const storedData = readStorage('cropRecommendation', null)
-
       if (!storedData) {
         navigate('/predict')
         return
       }
 
+      setResult(null)
       setError('')
-      setApiResult(null)
-      setRequestData(storedData)
 
       try {
-        const result = await fetchCropRecommendation(storedData, 5)
-        if (isActive) setApiResult(result)
+        const apiResult = await getCropRecommendation(storedData)
+        if (isActive) {
+          if (!apiResult?.success) {
+            setError('No recommendations available. Please try again.')
+            return
+          }
+          setResult(apiResult)
+          setExpandedAdvisory(0)
+        }
       } catch (err) {
         if (isActive) {
           setError(err instanceof Error ? err.message : t('results.error.body'))
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false)
         }
       }
     }
@@ -63,208 +107,320 @@ export default function Results() {
     }
   }, [navigate, reloadKey, t])
 
-  const recommendation = requestData && apiResult ? buildAdvisory(requestData, apiResult, t) : null
+  useEffect(() => {
+    if (!loading) return undefined
+    const timer = window.setInterval(() => {
+      setLoadingMessageIndex((value) => (value + 1) % loadingMessages.length)
+    }, 1200)
+    return () => window.clearInterval(timer)
+  }, [loading, loadingMessages])
 
   useEffect(() => {
-    if (!recommendation) return
-
-    const latest = recommendation.topRecommendations[0]
-    if (!latest) return
-
+    if (!result?.recommendations?.length) return
+    const topPick = result.recommendations[0]
     const entry = {
-      generatedAt: recommendation.generatedAt || new Date().toISOString(),
-      crop: latest.crop,
-      confidence: latest.confidence,
-      reason: latest.reason,
-      yieldRange: latest.yieldRange,
+      generatedAt: new Date().toISOString(),
+      crop: topPick.crop,
+      confidence: topPick.confidence,
+      reason: topPick.reason,
+      yieldRange: topPick.growing_duration,
     }
+    safeHistoryWrite(entry)
+  }, [result])
 
-    const existing = readStorage('smartkrishiHistory', [])
-    const nextHistory = [entry, ...existing.filter((item) => item.generatedAt !== entry.generatedAt)].slice(0, 5)
-    window.localStorage.setItem('smartkrishiHistory', JSON.stringify(nextHistory))
-  }, [recommendation])
+  const handleReviewInputs = () => navigate('/predict', { state: { review: true } })
 
-  if (error && !recommendation) {
+  const handleNewPlan = () => {
+    try {
+      window.localStorage.removeItem('cropRecommendation')
+      window.localStorage.removeItem('lastInputs')
+    } catch {
+      // Ignore storage failures and still navigate.
+    }
+    navigate('/predict', { state: { reset: true } })
+  }
+
+  if (loading) {
     return (
-      <Layout title={t('results.title')} subtitle={t('results.subtitle')} showBack>
-        <div className="space-y-4">
-          <Card className="border-rose-200 bg-rose-50">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
-              {t('results.error.eyebrow')}
+      <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
+        <MinistryNavbar />
+        <main className="mx-auto flex min-h-[calc(100vh-76px)] max-w-4xl items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+          <section className="w-full rounded-2xl border border-[#e5e7eb] bg-white p-8 text-center shadow-[0_14px_40px_rgba(26,58,42,0.08)]">
+            <div className="text-5xl animate-pulse">🌾</div>
+            <h1 className="mt-6 font-heading text-3xl font-bold text-[#1a3a2a]">Analyzing your farm conditions...</h1>
+            <p className="mt-3 text-[16px] text-[#6b7280]">{loadingMessages[loadingMessageIndex]}</p>
+
+            <div className="mx-auto mt-6 h-3 w-full max-w-lg overflow-hidden rounded-full bg-[#f4e7c4]">
+              <div className="h-full w-1/2 animate-[shimmer_1.6s_infinite] rounded-full bg-[#d4a843]" />
             </div>
-            <div className="mt-2 text-2xl font-extrabold text-rose-900">{t('results.error.title')}</div>
-            <div className="mt-2 max-w-2xl text-sm leading-6 text-rose-800">{error}</div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <SecondaryButton onClick={() => navigate('/predict')} className="w-full">
-                {t('results.actions.reviewInputs')}
-              </SecondaryButton>
-              <PrimaryButton onClick={() => setReloadKey((value) => value + 1)} className="w-full">
-                {t('common.retry')}
-              </PrimaryButton>
-            </div>
-          </Card>
-        </div>
-      </Layout>
+
+            <p className="mt-4 text-sm text-[#6b7280]">Evaluating crops • Checking season • Analyzing soil • Computing</p>
+          </section>
+        </main>
+      </div>
     )
   }
 
-  if (!recommendation) {
+  if (error && !result) {
     return (
-      <Layout title={t('results.title')} subtitle={t('results.subtitle')} showBack>
-        <div className="space-y-4">
-          <Card>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="w-full max-w-lg space-y-3">
-                <SkeletonBlock className="h-4 w-32" />
-                <SkeletonBlock className="h-10 w-64" />
-                <SkeletonBlock className="h-4 w-full" />
-                <SkeletonBlock className="h-4 w-5/6" />
-              </div>
-              <SkeletonBlock className="h-10 w-28" />
+      <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
+        <MinistryNavbar />
+        <main className="mx-auto flex min-h-[calc(100vh-76px)] max-w-4xl items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+          <section className="w-full rounded-2xl border border-[#f0c9c9] bg-white p-8 text-center shadow-[0_14px_40px_rgba(26,58,42,0.08)]">
+            <div className="text-4xl">⚠️</div>
+            <h1 className="mt-5 font-heading text-3xl font-bold text-[#1a3a2a]">Unable to generate recommendations</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-[16px] text-[#6b7280]">{error}</p>
+            <div className="mx-auto mt-8 grid max-w-xl gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setReloadKey((value) => value + 1)}
+                className="min-h-[56px] rounded-lg bg-[#1a3a2a] px-5 py-3 text-[16px] font-bold text-white transition duration-200 hover:scale-[1.01] hover:bg-[#24513a]"
+              >
+                Try Again
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="min-h-[56px] rounded-lg border-2 border-[#1a3a2a] bg-white px-5 py-3 text-[16px] font-bold text-[#1a3a2a] transition duration-200 hover:bg-[#edf3ef]"
+              >
+                Back to Home
+              </button>
             </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <SkeletonBlock className="h-24" />
-              <SkeletonBlock className="h-24" />
-              <SkeletonBlock className="h-24" />
-            </div>
-          </Card>
-          <div className="grid gap-4 lg:grid-cols-3">
-            <SkeletonBlock className="h-44" />
-            <SkeletonBlock className="h-44" />
-            <SkeletonBlock className="h-44" />
-          </div>
-          <SkeletonBlock className="h-28" />
-          <SkeletonBlock className="h-28" />
-        </div>
-      </Layout>
+          </section>
+        </main>
+      </div>
     )
   }
 
-  const topPick = recommendation.topRecommendations[0]
+  const recommendations = (result?.recommendations || []).slice(0, 2)
+  if (!recommendations.length) {
+    return (
+      <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
+        <MinistryNavbar />
+        <main className="mx-auto flex min-h-[calc(100vh-76px)] max-w-4xl items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+          <section className="w-full rounded-2xl border border-[#e5e7eb] bg-white p-8 text-center shadow-[0_14px_40px_rgba(26,58,42,0.08)]">
+            <h1 className="font-heading text-3xl font-bold text-[#1a3a2a]">No suitable crops found</h1>
+            <p className="mx-auto mt-3 max-w-2xl text-[16px] text-[#6b7280]">
+              No suitable crops found for your current inputs. Try adjusting soil parameters or selecting a different season.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/predict')}
+              className="mt-8 min-h-[56px] rounded-lg bg-[#1a3a2a] px-8 py-3 text-[16px] font-bold text-white transition duration-200 hover:scale-[1.01] hover:bg-[#24513a]"
+            >
+              Modify Inputs
+            </button>
+          </section>
+        </main>
+      </div>
+    )
+  }
+
+  const topPick = recommendations[0]
+  const climate = result?.climate_used || {}
+  const inputSummary = result?.input_summary || {}
+  const metadata = result?.metadata || {}
+
+  const advisoryRows = [
+    { icon: '💧', label: 'Irrigation', text: 'irrigation' },
+    { icon: '🧪', label: 'Fertilizer', text: 'fertilizer' },
+    { icon: '🐛', label: 'Pest Watch', text: 'pest_watch' },
+    { icon: '🌤', label: 'Weather Note', text: 'weather_note' },
+  ]
 
   return (
-    <Layout title={t('results.title')} subtitle={t('results.subtitle')} showBack>
-      <div className="space-y-4">
-        <Card className="panel-grid overflow-hidden">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-agri-ink-soft">
-                {t('results.readyLabel')}
-              </div>
-              <div className="mt-2 text-3xl font-extrabold text-agri-ink sm:text-4xl">{recommendation.bestCrop}</div>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-agri-ink-soft sm:text-base">{topPick?.reason}</p>
+    <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
+      <MinistryNavbar />
+
+      <main className="mx-auto max-w-[1100px] px-4 pb-14 pt-8 sm:px-6 lg:px-8">
+        <section className="rounded-2xl border border-[#e5e7eb] bg-[#faf8f2] p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-green-100 text-lg text-green-600">✓</span>
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#1a3a2a]">Recommendation Ready</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge tone="success">{t('results.aiConfidence', { value: recommendation.aiConfidence })}</Badge>
-              <Badge tone="wheat">{recommendation.basedOn}</Badge>
+              <span className="rounded-full border border-green-200 bg-green-50 px-4 py-1 text-sm font-semibold text-green-700">
+                AI Confidence: {formatConfidence(topPick?.confidence)}
+              </span>
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1 text-sm font-semibold text-amber-700">
+                {inputSummary?.season || '--'} • {result?.mode || '--'}
+              </span>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <MetricTile
-              label={t('results.topPick')}
-              value={topPick?.crop || recommendation.bestCrop}
-              caption={t('results.expectedYield')}
-              tone="success"
-            />
-            <MetricTile
-              label={t('results.expectedYield')}
-              value={topPick?.yieldRange || '--'}
-              caption={t('results.trustNote')}
-              tone="wheat"
-            />
-            <MetricTile
-              label={t('results.modelConfidence')}
-              value={`${topPick?.baseConfidence || recommendation.aiConfidence}%`}
-              caption={t('results.personalizedSignal')}
-              tone="soil"
-            />
+          <div className="mt-5">
+            <h1 className="font-heading text-4xl font-bold text-[#1a3a2a] sm:text-5xl">{capitalizeCrop(topPick?.crop)}</h1>
+            <p className="mt-3 max-w-3xl text-[16px] leading-7 text-[#6b7280]">{topPick?.reason || '--'}</p>
+          </div>
+
+          <div className="mt-7 grid gap-3 md:grid-cols-3">
+            <article className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">🏆 Top Crop</p>
+              <p className="mt-2 text-3xl font-bold text-[#1a3a2a]">{capitalizeCrop(topPick?.crop)}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">{topPick?.season || '--'} season</p>
+            </article>
+
+            <article className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">📅 Growing Time</p>
+              <p className="mt-2 text-3xl font-bold text-[#1a3a2a]">{topPick?.growing_duration || '--'}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">{monthWindowLabel(climate?.months_covered)}</p>
+            </article>
+
+            <article className="rounded-xl border border-[#e5e7eb] bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">🤖 ML Confidence</p>
+              <p className="mt-2 text-3xl font-bold text-[#1a3a2a]">{formatConfidence(topPick?.ml_score)}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">Rule adj: {topPick?.rule_adjustment || '+0.00'}</p>
+            </article>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            {recommendation.summaryChips.map((chip) => (
-              <Badge key={chip}>{chip}</Badge>
-            ))}
+            <span className="rounded-full border border-[#e5e7eb] bg-gray-100 px-3 py-1 text-sm text-[#4b5563]">🌾 Farm: {inputSummary?.farm_size_acres || '--'} acres</span>
+            <span className="rounded-full border border-[#e5e7eb] bg-gray-100 px-3 py-1 text-sm text-[#4b5563]">
+              🌡 Climate: {Math.round(Number(climate?.temperature || 0))}°C / {Math.round(Number(climate?.humidity || 0))}%
+            </span>
+            <span className="rounded-full border border-[#e5e7eb] bg-gray-100 px-3 py-1 text-sm text-[#4b5563]">
+              🌧 Rainfall: {Math.round(Number(climate?.rainfall || 0))} mm
+            </span>
+            <span className="rounded-full border border-[#e5e7eb] bg-gray-100 px-3 py-1 text-sm text-[#4b5563]">📊 Source: {formatSource(climate?.source)}</span>
           </div>
-        </Card>
+        </section>
 
-        <section className="space-y-4">
-          <SectionHeading
-            eyebrow={t('results.rankingEyebrow')}
-            title={t('results.topChoices')}
-            description={t('results.topChoicesDescription')}
-          />
+        <section className="mt-10 rounded-2xl border border-[#e5e7eb] bg-white p-6 sm:p-8">
+          <h2 className="font-heading text-3xl font-bold text-[#1a3a2a]">🌱 Top 2 Crop Choices</h2>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {recommendations.map((item, index) => {
+              const isTop = index === 0
+              return (
+                <article
+                  key={`${item.crop}-${item.rank}`}
+                  className={[
+                    'relative overflow-hidden rounded-2xl bg-white p-5',
+                    isTop ? 'border-2 border-green-200' : 'border border-gray-200',
+                  ].join(' ')}
+                >
+                  <span className={['absolute inset-y-0 left-0 w-1', isTop ? 'bg-green-600' : 'bg-amber-400'].join(' ')} />
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            {recommendation.topRecommendations.map((item) => (
-              <Card key={item.crop} className="flex h-full flex-col gap-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-agri-ink-soft">
-                      {t('results.rank', { value: item.rank })}
+                  <div className="ml-2 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1a3a2a]">Rank {item.rank}</p>
+                      <h3 className="mt-1 text-3xl font-bold text-[#1a3a2a]">{capitalizeCrop(item.crop)}</h3>
                     </div>
-                    <div className="mt-1 text-2xl font-extrabold text-agri-ink">{item.crop}</div>
+                    <span
+                      className={[
+                        'rounded-full border px-3 py-1 text-sm font-semibold',
+                        isTop ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700',
+                      ].join(' ')}
+                    >
+                      AI Confidence: {formatConfidence(item.confidence)}
+                    </span>
                   </div>
-                  <Badge tone={item.rank === 1 ? 'success' : 'neutral'}>
-                    {t('results.aiConfidence', { value: item.confidence })}
-                  </Badge>
-                </div>
 
-                <div className="rounded-2xl bg-agri-muted px-4 py-3 text-sm leading-6 text-agri-ink-soft">
-                  {item.reason}
-                </div>
+                  <div className="ml-2 mt-4 rounded-lg bg-[#faf8f2] p-4 text-[15px] leading-7 text-[#6b7280]">{item.reason}</div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <MetricTile label={t('results.expectedYield')} value={item.yieldRange} caption={t('results.trustNote')} tone="wheat" />
-                  <MetricTile label={t('results.modelConfidence')} value={`${item.baseConfidence}%`} caption={t('results.baseModel')} tone="neutral" />
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-4">
-          <SectionHeading
-            eyebrow={t('results.advisoryEyebrow')}
-            title={t('results.advisoryTitle')}
-            description={t('results.advisoryDescription')}
-          />
-
-          <div className="space-y-3">
-            {recommendation.advisorySections.map((section, index) => (
-              <AccordionSection
-                key={section.id}
-                title={section.title}
-                summary={section.summary}
-                icon={section.icon}
-                defaultOpen={index === 0}
-              >
-                <div className="space-y-3">
-                  {section.items.map((item, itemIndex) => (
-                    <div key={item} className="flex items-start gap-3 rounded-2xl bg-agri-muted px-4 py-3">
-                      <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-agri-green text-xs font-bold text-white">
-                        {itemIndex + 1}
-                      </div>
-                      <div className="text-sm leading-6 text-agri-ink-soft">{item}</div>
+                  <div className="ml-2 mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">Growing Time</p>
+                      <p className="mt-1 text-2xl font-bold text-[#1a3a2a]">{item.growing_duration}</p>
+                      <p className="mt-1 text-sm text-[#6b7280]">Season: {item.season}</p>
                     </div>
-                  ))}
-                </div>
-              </AccordionSection>
-            ))}
+                    <div className="rounded-lg bg-gray-50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">ML Score</p>
+                      <p className="mt-1 text-2xl font-bold text-[#1a3a2a]">{formatConfidence(item.ml_score)}</p>
+                      <p className="mt-1 text-sm text-[#6b7280]">Rule: {item.rule_adjustment}</p>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <p className="text-xs leading-6 text-agri-ink-soft">{recommendation.trustNote}</p>
+        <section className="mt-10 rounded-2xl border border-[#e5e7eb] bg-[#faf8f2] p-6 sm:p-8">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4a843]">Action Plan</p>
+          <h2 className="mt-2 font-heading text-3xl font-bold text-[#1a3a2a]">Crop Advisories</h2>
+          <p className="mt-2 text-[16px] text-[#6b7280]">Open each section for irrigation, fertilizer, pest control, and weather guidance.</p>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <SecondaryButton onClick={() => navigate('/predict')} className="w-full">
-            {t('results.actions.reviewInputs')}
-          </SecondaryButton>
-          <PrimaryButton onClick={() => navigate('/predict')} className="w-full">
-            {t('results.actions.newSuggestion')}
-          </PrimaryButton>
-        </div>
-      </div>
-    </Layout>
+          <div className="mt-6 space-y-3">
+            {recommendations.map((item, index) => {
+              const isOpen = expandedAdvisory === index
+              return (
+                <article key={`advisory-${item.crop}-${item.rank}`} className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedAdvisory((value) => (value === index ? -1 : index))}
+                    aria-expanded={isOpen}
+                    className="w-full p-5 text-left transition hover:bg-gray-50"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xl font-bold text-[#1a3a2a]">🌾 {capitalizeCrop(item.crop)} Advisory</p>
+                        <p className="mt-1 text-sm text-[#6b7280]">{item.reason}</p>
+                      </div>
+                      <span className="text-2xl font-medium text-[#1a3a2a]">{isOpen ? '−' : '+'}</span>
+                    </div>
+                  </button>
+
+                  <div className={[
+                    'overflow-hidden transition-all duration-300 ease-out',
+                    isOpen ? 'max-h-[680px] border-t border-gray-100' : 'max-h-0',
+                  ].join(' ')}>
+                    <div className="p-5">
+                      <div className="space-y-5 border-l-2 border-green-100 pl-4">
+                        {advisoryRows.map((row, rowIndex) => (
+                          <div key={`${item.crop}-${row.text}`} className="flex gap-3">
+                            <div className={[
+                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
+                              index === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700',
+                            ].join(' ')}>
+                              {rowIndex + 1}
+                            </div>
+                            <div>
+                              <p className="text-[16px] font-semibold text-[#1a3a2a]">
+                                {row.icon} {row.label}
+                              </p>
+                              <p className="mt-1 max-w-2xl text-[15px] leading-7 text-[#4b5563]">{item?.advisories?.[row.text] || '--'}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+
+        <section className="mt-10 rounded-2xl border border-[#e5e7eb] bg-white p-6 text-center">
+          <div className="border-t border-gray-100 pt-4 text-xs text-gray-400">
+            Analyzed {metadata?.total_crops_evaluated ?? '--'} crops • Processing time: {metadata?.processing_time_ms ?? '--'}ms • Model {metadata?.model_version || '--'}
+          </div>
+          <p className="mt-2 text-xs text-gray-400">
+            Rules applied: {(metadata?.rules_applied || []).join(', ') || '--'}
+          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-sm italic text-gray-500">
+            ⚠️ {metadata?.disclaimer || 'AI-based advisory. Please consult local agricultural experts for final decisions.'}
+          </p>
+        </section>
+
+        <section className="mt-8 grid gap-3 md:grid-cols-2">
+          <button
+            type="button"
+            onClick={handleReviewInputs}
+            className="min-h-[56px] rounded-lg border-2 border-[#1a3a2a] bg-white px-5 py-3 text-[16px] font-bold text-[#1a3a2a] transition duration-200 hover:bg-[#edf3ef]"
+          >
+            Review Inputs
+          </button>
+          <button
+            type="button"
+            onClick={handleNewPlan}
+            className="min-h-[56px] rounded-lg bg-[#1a3a2a] px-5 py-3 text-[16px] font-bold text-white transition duration-200 hover:scale-[1.01] hover:bg-[#24513a]"
+          >
+            Start New Plan
+          </button>
+        </section>
+      </main>
+    </div>
   )
 }

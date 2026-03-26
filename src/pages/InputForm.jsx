@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import MinistryNavbar from '../components/MinistryNavbar'
-import { useWeather } from '../hooks/useWeather'
+import { useStateWeather } from '../hooks/useStateWeather'
 
 const STATES = [
   {
@@ -149,6 +149,7 @@ function SliderField({ label, min, max, value, step = 1, suffix = '', onChange }
 
 export default function InputForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t, i18n } = useTranslation()
 
   const isHindi = (i18n.resolvedLanguage || i18n.language || 'hi').startsWith('hi')
@@ -173,7 +174,16 @@ export default function InputForm() {
   const [autoFillSoilTest, setAutoFillSoilTest] = useState(false)
   const [error, setError] = useState('')
 
-  const { data: weather, loading: weatherLoading, error: weatherError, refetch: refetchWeather } = useWeather()
+  const [temperatureInput, setTemperatureInput] = useState('')
+  const [humidityInput, setHumidityInput] = useState('')
+  const [rainfallInput, setRainfallInput] = useState('')
+
+  const { data: weather, loading: weatherLoading, error: weatherError, refetch: refetchWeather } = useStateWeather({
+    state: selectedState,
+    district,
+    mode: activeTab,
+    farmingMonth,
+  })
 
   const districts = useMemo(() => {
     const selected = STATES.find((stateItem) => stateItem.value === selectedState)
@@ -186,6 +196,65 @@ export default function InputForm() {
     }
   }, [districts, district])
 
+  useEffect(() => {
+    setStep(0)
+
+    if (location.state?.reset) {
+      setSelectedState('Maharashtra')
+      setDistrict('Pune')
+      setLandArea('5')
+      setActiveTab('current')
+      setFarmingMonth('June')
+      setPreviousCrop('Rice')
+      setPreviousCropMonth('February')
+      setNitrogen(50)
+      setPhosphorus(50)
+      setPotassium(50)
+      setPh(7)
+      setAutoFillSoilTest(false)
+      setTemperatureInput('')
+      setHumidityInput('')
+      setRainfallInput('')
+      setError('')
+      return
+    }
+
+    const savedInputs = window.localStorage.getItem('lastInputs')
+    if (!savedInputs) {
+      return
+    }
+
+    try {
+      const parsed = JSON.parse(savedInputs)
+      setSelectedState(parsed.state || 'Maharashtra')
+      setDistrict(parsed.district || 'Pune')
+      setLandArea(parsed.landArea || '5')
+      setActiveTab(parsed.activeTab || 'current')
+      setFarmingMonth(parsed.farmingMonth || 'June')
+      setPreviousCrop(parsed.previousCrop || 'Rice')
+      setPreviousCropMonth(parsed.previousCropMonth || 'February')
+      setNitrogen(Number(parsed.N ?? 50))
+      setPhosphorus(Number(parsed.P ?? 50))
+      setPotassium(Number(parsed.K ?? 50))
+      setPh(Number(parsed.pH ?? 7))
+      setTemperatureInput(parsed.temperature != null ? String(parsed.temperature) : '')
+      setHumidityInput(parsed.humidity != null ? String(parsed.humidity) : '')
+      setRainfallInput(parsed.rainfall != null ? String(parsed.rainfall) : '')
+    } catch {
+      // Ignore malformed stored input payload.
+    }
+  }, [location.state])
+
+  useEffect(() => {
+    if (!weather) {
+      return
+    }
+
+    setTemperatureInput(weather.temperature != null ? String(Math.round(weather.temperature * 10) / 10) : '')
+    setHumidityInput(weather.humidity != null ? String(Math.round(weather.humidity)) : '')
+    setRainfallInput(weather.precipitation != null ? String(Math.round(weather.precipitation * 10) / 10) : '')
+  }, [weather, activeTab, selectedState, district, farmingMonth])
+
   const validateStep = (stepToValidate) => {
     if (!selectedState || !district) {
       return t('predictForm.validation.locationRequired')
@@ -197,13 +266,10 @@ export default function InputForm() {
     }
 
     if (stepToValidate === 1 && activeTab === 'current') {
-      if (
-        weatherLoading ||
-        weatherError ||
-        weather?.temperature == null ||
-        weather?.humidity == null ||
-        weather?.precipitation == null
-      ) {
+      const temperature = Number(temperatureInput)
+      const humidity = Number(humidityInput)
+      const rainfall = Number(rainfallInput)
+      if (weatherLoading || weatherError || Number.isNaN(temperature) || Number.isNaN(humidity) || Number.isNaN(rainfall)) {
         return t('predictForm.validation.weatherUnavailable')
       }
     }
@@ -224,11 +290,18 @@ export default function InputForm() {
       return
     }
     setError('')
-    setStep((prev) => Math.min(2, prev + 1))
+    if (step < 2) {
+      setStep((prev) => prev + 1)
+    }
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
+    // Guard: only submit when on the final step
+    if (step !== 2) {
+      return
+    }
 
     const allErrors = [0, 1, 2].map((index) => validateStep(index)).find((msg) => msg)
     if (allErrors) {
@@ -243,22 +316,24 @@ export default function InputForm() {
       state: selectedState,
       district,
       landArea,
-      temperature: weather?.temperature ?? null,
-      humidity: weather?.humidity ?? null,
-      rainfall: weather?.precipitation ?? null,
+      temperature: temperatureInput === '' ? null : Number(temperatureInput),
+      humidity: humidityInput === '' ? null : Number(humidityInput),
+      rainfall: rainfallInput === '' ? null : Number(rainfallInput),
       farmingMonth,
       previousCrop,
       previousCropMonth,
-      nitrogen,
-      phosphorus,
-      potassium,
-      ph,
+      N: nitrogen,
+      P: phosphorus,
+      K: potassium,
+      pH: ph,
       autoFillSoilTest,
       submittedAt: new Date().toISOString(),
     }
 
+    window.localStorage.setItem('lastInputs', JSON.stringify(payload))
     window.localStorage.setItem('cropRecommendation', JSON.stringify(payload))
     console.log(t('predictForm.submitLogPrefix'), payload)
+    navigate('/results')
   }
 
   return (
@@ -315,7 +390,7 @@ export default function InputForm() {
           <StepBadge number={3} label={t('predictForm.steps.three')} active={step === 2} done={false} />
         </section>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="mt-8 space-y-6">
           {step === 0 ? (
             <section className="space-y-6 animate-rise-in">
               <article className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
@@ -388,7 +463,7 @@ export default function InputForm() {
                   <p className="mt-1 text-sm text-gray-500">{t('predictForm.weather.subtitle')}</p>
                   <div className="mt-5 h-px bg-gray-200" />
 
-                  <p className="mt-4 text-sm text-gray-500">{weather?.locationLabel || t('home.weather.localLabel')}</p>
+                  <p className="mt-4 text-sm text-gray-500">📍 Live weather for {district}, {selectedState}</p>
 
                   {weatherError ? (
                     <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-800">
@@ -402,31 +477,56 @@ export default function InputForm() {
                       </button>
                     </div>
                   ) : (
-                    <div className="mt-5 grid gap-5 md:grid-cols-3">
-                      <div className="rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-4">
-                        <p className="text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.temperature')}</p>
-                        <p className="mt-2 text-2xl font-bold text-[#1a3a2a]">
-                          {weatherLoading || weather?.temperature == null ? '—' : Math.round(weather.temperature)}
-                          {weatherLoading || weather?.temperature == null ? '' : '°C'}
-                        </p>
+                    <>
+                      <div className="mt-5 grid gap-5 md:grid-cols-3">
+                        <div>
+                          <label htmlFor="temperatureInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.temperature')}</label>
+                          <input
+                            id="temperatureInput"
+                            type="number"
+                            value={temperatureInput}
+                            onChange={(e) => setTemperatureInput(e.target.value)}
+                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="humidityInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.humidity')}</label>
+                          <input
+                            id="humidityInput"
+                            type="number"
+                            value={humidityInput}
+                            onChange={(e) => setHumidityInput(e.target.value)}
+                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="rainfallInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.rainfall')}</label>
+                          <input
+                            id="rainfallInput"
+                            type="number"
+                            value={rainfallInput}
+                            onChange={(e) => setRainfallInput(e.target.value)}
+                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4 rounded-lg border border-[#d8dfd9] bg-[#faf8f2] px-4 py-3 text-sm text-[#4b5b54]">
+                        ℹ️ Values are auto-filled from live weather. You can edit them if you have local measurements.
                       </div>
 
-                      <div className="rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-4">
-                        <p className="text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.humidity')}</p>
-                        <p className="mt-2 text-2xl font-bold text-[#1a3a2a]">
-                          {weatherLoading || weather?.humidity == null ? '—' : Math.round(weather.humidity)}
-                          {weatherLoading || weather?.humidity == null ? '' : '%'}
-                        </p>
+                      <div className="mt-3 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={refetchWeather}
+                          className="min-h-11 rounded-lg border border-[#1a3a2a] bg-white px-4 py-2 text-sm font-semibold text-[#1a3a2a]"
+                        >
+                          🔄 Refresh Weather
+                        </button>
+                        {weatherLoading ? <span className="text-sm text-gray-500">Fetching weather...</span> : null}
                       </div>
-
-                      <div className="rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-4">
-                        <p className="text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.rainfall')}</p>
-                        <p className="mt-2 text-2xl font-bold text-[#1a3a2a]">
-                          {weatherLoading || weather?.precipitation == null ? '—' : weather.precipitation}
-                          {weatherLoading || weather?.precipitation == null ? '' : ' mm'}
-                        </p>
-                      </div>
-                    </div>
+                    </>
                   )}
                 </article>
               ) : (
@@ -489,6 +589,14 @@ export default function InputForm() {
                         ))}
                       </select>
                     </div>
+                  </div>
+
+                  <div className="mt-6 rounded-lg border border-[#d8dfd9] bg-[#faf8f2] px-4 py-4">
+                    <p className="text-sm font-semibold text-[#1a3a2a]">🌤 Expected climate for {farmingMonth} in {selectedState}</p>
+                    <p className="mt-2 text-[15px] text-[#2b3a2f]">
+                      🌡 Temp: {temperatureInput || '--'}°C &nbsp;&nbsp; 💧 Humidity: {humidityInput || '--'}% &nbsp;&nbsp; 🌧 Rain: {rainfallInput || '--'} mm
+                    </p>
+                    <p className="mt-2 text-xs text-[#6b7280]">📊 Based on historical monthly averages</p>
                   </div>
                 </article>
               )}
@@ -566,14 +674,17 @@ export default function InputForm() {
               >
                 {t('predictForm.navigation.continue')}
               </button>
-            ) : (
+            ) : null}
+
+            {step === 2 ? (
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 className="min-h-[56px] rounded-lg bg-[#1a3a2a] px-5 py-3 text-[16px] font-bold text-white transition duration-200 hover:scale-[1.01] hover:bg-[#24513a]"
               >
                 {t('predictForm.navigation.getRecommendations')}
               </button>
-            )}
+            ) : null}
 
             <button
               type="button"

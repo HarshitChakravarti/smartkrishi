@@ -1,12 +1,31 @@
 {
-  "N": 90,
-  "P": 42,
-  "K": 43,
-  "humidity": 80,
-  "rainfall": 210,
-  "temperature": 24,
-  "ph": 6.5,
-  "farm_size": 2.5,
-  "previous_crop": "rice",
-  "season": "kharif"
+  "current": {
+    "activeTab": "current",
+    "state": "Maharashtra",
+    "district": "Pune",
+    "landArea": "2.5",
+    "temperature": 28.5,
+    "humidity": 72,
+    "rainfall": 145.2,
+    "N": 80,
+    "P": 40,
+    "K": 40,
+    "pH": 6.5
+  },
+  "planning": {
+    "activeTab": "planning",
+    "state": "Punjab",
+    "district": "Ludhiana",
+    "landArea": "5",
+    "farmingMonth": "November",
+    "previousCrop": "rice",
+    "previousCropMonth": "October",
+    "temperature": 25.0,
+    "humidity": 60,
+    "rainfall": 10,
+    "N": 60,
+    "P": 50,
+    "K": 45,
+    "pH": 7.0
+  }
 }
