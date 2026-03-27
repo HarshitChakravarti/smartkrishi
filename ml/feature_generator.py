@@ -42,6 +42,14 @@ def _normalize_month(month: str) -> str:
     return str(month).strip().title()
 
 
+def _payload_ph(payload: dict[str, Any]) -> float:
+    if payload.get("pH") is not None:
+        return float(payload["pH"])
+    if payload.get("ph") is not None:
+        return float(payload["ph"])
+    raise KeyError("Missing pH/ph in payload")
+
+
 def _load_json(path: str) -> dict[str, Any]:
     file_path = Path(path)
     if not file_path.exists():
@@ -217,7 +225,7 @@ def generate_features_current_mode(payload: dict[str, Any]) -> tuple[dict[str, f
         "N": float(payload["N"]),
         "P": float(payload["P"]),
         "K": float(payload["K"]),
-        "pH": float(payload["pH"]),
+        "pH": _payload_ph(payload),
         "temperature": float(payload["temperature"]),
         "humidity": float(payload["humidity"]),
         "rainfall": float(payload["rainfall"]),
@@ -242,7 +250,7 @@ def generate_features_planning_mode(payload: dict[str, Any], crop_name: str) -> 
         "N": float(payload["N"]),
         "P": float(payload["P"]),
         "K": float(payload["K"]),
-        "pH": float(payload["pH"]),
+        "pH": _payload_ph(payload),
         "temperature": float(climate["temperature"]),
         "humidity": float(climate["humidity"]),
         "rainfall": float(climate["rainfall"]),

@@ -23,6 +23,177 @@ except ImportError:  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
+FALLBACK_CROP_DATA = {
+    "watermelon": {
+        "display_name": "Watermelon",
+        "hindi_name": "Tarbooj",
+        "category": "fruit",
+        "tags": ["zaid", "fruit", "field_crop"],
+        "seasons": {
+            "primary": "Zaid",
+            "secondary": None,
+            "sowing_months": ["February", "March", "April"],
+            "harvesting_months": ["May", "June"],
+            "growing_duration_days": 90,
+            "growing_duration_months": 3,
+        },
+        "climate_requirements": {
+            "temperature": {"min": 22, "max": 38, "optimal_min": 26, "optimal_max": 34},
+            "humidity": {"min": 20, "max": 65, "optimal_min": 30, "optimal_max": 50},
+            "rainfall": {"min": 0, "max": 80, "optimal_min": 10, "optimal_max": 40},
+        },
+        "soil_requirements": {
+            "N": {"min": 30, "max": 120, "optimal_min": 50, "optimal_max": 90},
+            "P": {"min": 15, "max": 60, "optimal_min": 25, "optimal_max": 45},
+            "K": {"min": 25, "max": 80, "optimal_min": 40, "optimal_max": 60},
+            "pH": {"min": 6.0, "max": 7.8, "optimal_min": 6.3, "optimal_max": 7.2},
+        },
+        "rotation": {
+            "nitrogen_fixing": False,
+            "bad_predecessors": ["watermelon", "muskmelon", "cucumber"],
+            "good_predecessors": ["wheat", "mustard", "chickpea"],
+            "good_successors": ["mungbean", "maize"],
+            "why_good_rotation": "Cucurbits perform well after winter cereals with clean fields and irrigation.",
+        },
+        "regional_suitability": {
+            "best_states": ["Uttar Pradesh", "Rajasthan", "Maharashtra", "Madhya Pradesh"],
+            "moderate_states": ["Punjab", "Haryana", "Bihar", "Gujarat"],
+            "unsuitable_states": ["Kerala"],
+        },
+        "economics": {
+            "minimum_viable_farm_size_acres": 1.0,
+            "ideal_farm_size_acres": [1.0, 8.0],
+        },
+        "water_needs": {"category": "moderate"},
+        "irrigation_advisory": {
+            "method": "Use furrow or drip irrigation with light frequent watering until fruit set",
+            "water_saving": "Mulch the beds to conserve moisture under hot Zaid conditions",
+            "critical_periods": "Flowering and fruit enlargement need steady moisture",
+        },
+        "fertilizer_advisory": {
+            "N_schedule": "Apply basal phosphorus and potassium and split nitrogen between vine growth and fruit set",
+            "organic_alternatives": "Use compost or well-rotted FYM before bed preparation",
+        },
+        "pest_disease_risk": {
+            "major_pests": ["fruit fly", "aphids", "red pumpkin beetle"],
+            "major_diseases": ["powdery mildew", "downy mildew"],
+            "risk_conditions": "Sudden humidity spikes and poor airflow increase foliar disease risk.",
+        },
+    },
+    "muskmelon": {
+        "display_name": "Muskmelon",
+        "hindi_name": "Kharbooja",
+        "category": "fruit",
+        "tags": ["zaid", "fruit", "field_crop"],
+        "seasons": {
+            "primary": "Zaid",
+            "secondary": None,
+            "sowing_months": ["February", "March", "April"],
+            "harvesting_months": ["May", "June"],
+            "growing_duration_days": 85,
+            "growing_duration_months": 3,
+        },
+        "climate_requirements": {
+            "temperature": {"min": 22, "max": 38, "optimal_min": 26, "optimal_max": 34},
+            "humidity": {"min": 20, "max": 60, "optimal_min": 25, "optimal_max": 45},
+            "rainfall": {"min": 0, "max": 60, "optimal_min": 5, "optimal_max": 25},
+        },
+        "soil_requirements": {
+            "N": {"min": 30, "max": 120, "optimal_min": 50, "optimal_max": 90},
+            "P": {"min": 15, "max": 60, "optimal_min": 25, "optimal_max": 45},
+            "K": {"min": 25, "max": 80, "optimal_min": 40, "optimal_max": 60},
+            "pH": {"min": 6.0, "max": 7.8, "optimal_min": 6.3, "optimal_max": 7.2},
+        },
+        "rotation": {
+            "nitrogen_fixing": False,
+            "bad_predecessors": ["watermelon", "muskmelon", "cucumber"],
+            "good_predecessors": ["wheat", "mustard", "chickpea"],
+            "good_successors": ["mungbean", "maize"],
+            "why_good_rotation": "Dry summer cucurbits fit well after winter crops with irrigation support.",
+        },
+        "regional_suitability": {
+            "best_states": ["Uttar Pradesh", "Rajasthan", "Haryana", "Punjab"],
+            "moderate_states": ["Madhya Pradesh", "Bihar", "Gujarat", "Maharashtra"],
+            "unsuitable_states": ["Kerala"],
+        },
+        "economics": {
+            "minimum_viable_farm_size_acres": 1.0,
+            "ideal_farm_size_acres": [1.0, 6.0],
+        },
+        "water_needs": {"category": "moderate"},
+        "irrigation_advisory": {
+            "method": "Use drip or furrow irrigation and reduce watering close to harvest for better sweetness",
+            "water_saving": "Mulch and irrigate in the early morning to reduce evaporation losses",
+            "critical_periods": "Flowering and fruit bulking stages are moisture-sensitive",
+        },
+        "fertilizer_advisory": {
+            "N_schedule": "Apply basal phosphorus and potassium and split nitrogen through early vine growth",
+            "organic_alternatives": "Incorporate compost before sowing to improve bed structure",
+        },
+        "pest_disease_risk": {
+            "major_pests": ["fruit fly", "aphids", "leaf miner"],
+            "major_diseases": ["powdery mildew", "fusarium wilt"],
+            "risk_conditions": "Humidity spikes after irrigation can accelerate foliar disease development.",
+        },
+    },
+    "mustard": {
+        "display_name": "Mustard",
+        "hindi_name": "Sarson",
+        "category": "oilseed",
+        "tags": ["rabi", "oilseed", "field_crop"],
+        "seasons": {
+            "primary": "Rabi",
+            "secondary": None,
+            "sowing_months": ["October", "November"],
+            "harvesting_months": ["February", "March"],
+            "growing_duration_days": 120,
+            "growing_duration_months": 4,
+        },
+        "climate_requirements": {
+            "temperature": {"min": 15, "max": 28, "optimal_min": 18, "optimal_max": 24},
+            "humidity": {"min": 35, "max": 75, "optimal_min": 45, "optimal_max": 65},
+            "rainfall": {"min": 10, "max": 120, "optimal_min": 25, "optimal_max": 80},
+        },
+        "soil_requirements": {
+            "N": {"min": 20, "max": 70, "optimal_min": 30, "optimal_max": 50},
+            "P": {"min": 15, "max": 60, "optimal_min": 25, "optimal_max": 45},
+            "K": {"min": 15, "max": 60, "optimal_min": 25, "optimal_max": 45},
+            "pH": {"min": 6.0, "max": 8.0, "optimal_min": 6.5, "optimal_max": 7.5},
+        },
+        "rotation": {
+            "nitrogen_fixing": False,
+            "bad_predecessors": ["mustard", "cotton"],
+            "good_predecessors": ["rice", "mungbean", "maize", "wheat"],
+            "good_successors": ["mungbean", "maize", "rice"],
+            "why_good_rotation": "Oilseed rotation helps diversify pests and nutrient demand.",
+        },
+        "regional_suitability": {
+            "best_states": ["Rajasthan", "Punjab", "Haryana", "Uttar Pradesh", "Madhya Pradesh"],
+            "moderate_states": ["Bihar", "Gujarat", "Maharashtra"],
+            "unsuitable_states": ["Kerala"],
+        },
+        "economics": {
+            "minimum_viable_farm_size_acres": 1.0,
+            "ideal_farm_size_acres": [2.0, 12.0],
+        },
+        "water_needs": {"category": "low"},
+        "irrigation_advisory": {
+            "method": "Use light irrigation at branching and pod filling stages",
+            "water_saving": "Avoid standing water and irrigate only when soil moisture drops",
+            "critical_periods": "Flowering and siliqua development are moisture-sensitive",
+        },
+        "fertilizer_advisory": {
+            "N_schedule": "Apply basal phosphorus and split nitrogen into basal and early vegetative doses",
+            "organic_alternatives": "Incorporate well-decomposed FYM before sowing",
+        },
+        "pest_disease_risk": {
+            "major_pests": ["aphids", "painted bug", "sawfly"],
+            "major_diseases": ["alternaria blight", "white rust"],
+            "risk_conditions": "Cool humid weather increases aphid and foliar disease pressure.",
+        },
+    }
+}
+
 
 class CropProfile:
     """Individual crop profile with scoring methods."""
@@ -261,6 +432,8 @@ class CropKnowledgeBase:
         else:
             with kb_path.open("r", encoding="utf-8") as f:
                 self._data = json.load(f)
+            for crop_name, crop_data in FALLBACK_CROP_DATA.items():
+                self._data.setdefault(crop_name, crop_data)
             self._crops = {
                 name: CropProfile(name, data)
                 for name, data in self._data.items()
@@ -275,6 +448,10 @@ class CropKnowledgeBase:
     def get_all_crops(self) -> list[str]:
         self._ensure_loaded()
         return list(self._crops.keys())
+
+    def has_crop(self, crop_name: str) -> bool:
+        self._ensure_loaded()
+        return crop_name.lower().strip() in self._crops
 
     def get_crops_for_season(self, season: str) -> list[str]:
         self._ensure_loaded()

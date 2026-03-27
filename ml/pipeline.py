@@ -1,85 +1,142 @@
-"""Main orchestration pipeline for SmartKrishi recommendation engine."""
+"""Main orchestration pipeline for SmartKrishi recommendations."""
 
 from __future__ import annotations
 
 import datetime as dt
+import json
+import logging
 import time
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 try:
+    from .config import CROP_FAMILIES_PATH, SEASONAL_CROPS_PATH
+    from .crop_knowledge import CropKnowledgeBase
     from .feature_generator import generate_features, get_crop_duration
-    from .model import get_all_crop_names, predict_probability_distribution, predict_top_crops
+    from .model import (
+        get_all_crop_names,
+        get_crop_probability,
+        get_training_profile_fit,
+        predict_probability_distribution,
+        validate_inference_input,
+    )
     from .rules import apply_all_rules, detect_season
     from .schemas import PredictionRequest
-    from .crop_knowledge import CropKnowledgeBase
 except ImportError:  # pragma: no cover
+    from config import CROP_FAMILIES_PATH, SEASONAL_CROPS_PATH  # type: ignore
+    from crop_knowledge import CropKnowledgeBase  # type: ignore
     from feature_generator import generate_features, get_crop_duration  # type: ignore
-    from model import get_all_crop_names, predict_probability_distribution, predict_top_crops  # type: ignore
+    from model import (  # type: ignore
+        get_all_crop_names,
+        get_crop_probability,
+        get_training_profile_fit,
+        predict_probability_distribution,
+        validate_inference_input,
+    )
     from rules import apply_all_rules, detect_season  # type: ignore
     from schemas import PredictionRequest  # type: ignore
-    from crop_knowledge import CropKnowledgeBase  # type: ignore
 
+logger = logging.getLogger(__name__)
 kb = CropKnowledgeBase()
+
+DEFAULT_SEASONAL_CROPS = {
+    "Kharif": ["rice", "maize", "cotton", "jute", "mungbean", "mothbeans", "pigeonpeas"],
+    "Rabi": ["wheat", "chickpea", "lentil", "blackgram", "mustard"],
+    "Zaid": ["watermelon", "muskmelon", "mungbean"],
+    "Perennial": ["banana", "coconut", "papaya", "coffee", "orange", "mango", "apple", "grapes", "pomegranate"],
+}
 
 
 def _current_month_name() -> str:
-    return dt.datetime.now(dt.UTC).strftime("%B")
+    return dt.datetime.now().strftime("%B")
 
 
-def _prefilter_crops_for_season(farming_month: str) -> list[str]:
-    """
-    BEFORE running ML predictions, eliminate crops that are
-    completely wrong for the season. This prevents the ML model
-    from recommending mothbeans in Rabi.
-    
-    Returns list of crop names that CAN be grown in this season.
-    """
-    season = detect_season(farming_month)
-    
-    # Get crops valid for this season from knowledge base
-    valid_crops = kb.get_crops_for_season(season)
-    
-    # Always include perennials
-    all_crops = kb.get_all_crops()
-    perennials = [c for c in all_crops if kb.get_crop(c) and kb.get_crop(c).is_perennial]
-    
-    valid_set = set(valid_crops) | set(perennials)
-    
-    # If we somehow filter out everything, return all (safety)
-    if not valid_set or len(valid_set) < 3:
-        return all_crops
-    
-    return list(valid_set)
+@lru_cache(maxsize=1)
+def _load_seasonal_catalog() -> dict[str, list[str]]:
+    path = Path(SEASONAL_CROPS_PATH)
+    if not path.exists():
+        return DEFAULT_SEASONAL_CROPS
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        logger.warning("Invalid seasonal crop file at %s. Using defaults.", path)
+        return DEFAULT_SEASONAL_CROPS
+
+    catalog: dict[str, list[str]] = {}
+    for season_name, crops in raw.items():
+        catalog[str(season_name)] = [str(crop).strip().lower() for crop in crops]
+    for season_name, crops in DEFAULT_SEASONAL_CROPS.items():
+        catalog.setdefault(season_name, crops)
+    return catalog
 
 
-def generate_advisories(crop: str, context: dict, climate: dict) -> dict:
-    """Fallback generic advisories if crop not in KB."""
+@lru_cache(maxsize=1)
+def _load_crop_categories() -> dict[str, str]:
+    path = Path(CROP_FAMILIES_PATH)
+    if not path.exists():
+        return {}
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    categories: dict[str, str] = {}
+    for family_name, members in raw.items():
+        for crop_name in members:
+            categories[str(crop_name).strip().lower()] = str(family_name).strip().lower()
+    return categories
+
+
+@lru_cache(maxsize=1)
+def _model_crop_set() -> set[str]:
+    return set(get_all_crop_names())
+
+
+def _is_supported_crop(crop_name: str) -> bool:
+    crop_name = crop_name.lower().strip()
+    return crop_name in _model_crop_set() or kb.has_crop(crop_name)
+
+
+def _get_candidate_crops(season: str, mode: str) -> list[str]:
+    catalog = _load_seasonal_catalog()
+    season_crops = [crop for crop in catalog.get(season, []) if _is_supported_crop(crop)]
+    perennial_crops = [crop for crop in catalog.get("Perennial", []) if _is_supported_crop(crop)]
+
+    if mode == "planning":
+        candidates = season_crops
+    else:
+        candidates = season_crops + perennial_crops
+
+    deduped = list(dict.fromkeys(candidates))
+    if deduped:
+        return deduped
+
+    fallback = [crop for crop in sorted(_model_crop_set()) if _is_supported_crop(crop)]
+    return fallback
+
+
+def generate_advisories(crop: str, climate: dict) -> dict:
+    """Fallback advisories for crops without knowledge-base detail."""
     crop_lower = str(crop).lower()
     rainfall = float(climate["rainfall"])
-    ph_warning = "Keep pH between 6.0 and 7.5 for best nutrient availability."
 
-    if crop_lower in {"rice", "sugarcane", "banana"}:
-        irrigation = "Maintain consistent soil moisture; schedule light but frequent irrigation cycles."
-    elif rainfall < 60:
-        irrigation = "Adopt drip or furrow irrigation to conserve water during low rainfall months."
+    if crop_lower in {"rice", "banana", "coconut"}:
+        irrigation = "Maintain consistent soil moisture and avoid long dry spells."
+    elif rainfall < 40:
+        irrigation = "Plan irrigation support because ambient rainfall is low for this crop window."
     else:
-        irrigation = "Use moisture-based irrigation scheduling and avoid overwatering."
+        irrigation = "Use soil-moisture based irrigation scheduling and avoid waterlogging."
 
-    if crop_lower in {"chickpea", "lentil", "mungbean", "mothbeans"}:
-        fertilizer = "Prioritize phosphorus and potassium; avoid excessive nitrogen for legumes."
-    elif crop_lower in {"rice", "maize", "wheat"}:
-        fertilizer = "Split nitrogen doses across growth stages and complement with balanced NPK."
+    if crop_lower in {"chickpea", "lentil", "mungbean", "blackgram", "mothbeans"}:
+        fertilizer = "Prioritize phosphorus and potassium and avoid excess nitrogen in legumes."
     else:
-        fertilizer = "Use soil-test guided NPK application with micronutrient correction where needed."
+        fertilizer = "Use balanced NPK guided by a recent soil test and local agronomy advice."
 
-    if crop_lower in {"cotton", "chilli", "pigeonpeas"}:
-        pest_watch = "Monitor for sucking pests and borers; use integrated pest management traps."
+    if crop_lower in {"cotton", "pigeonpeas", "coffee"}:
+        pest_watch = "Watch for sucking pests and borers and respond early with integrated pest management."
     else:
-        pest_watch = "Scout fields weekly and act early using local extension advisories."
+        pest_watch = "Scout the field weekly and follow local extension advisories for pest pressure."
 
     weather_note = (
-        f"Expected climate window uses {climate['source']} with avg temperature {climate['temperature']} C, "
-        f"humidity {climate['humidity']}%, rainfall {climate['rainfall']} mm. {ph_warning}"
+        f"Climate window uses {climate['source']} data with average temperature "
+        f"{climate['temperature']} C, humidity {climate['humidity']}%, rainfall {climate['rainfall']} mm."
     )
 
     return {
@@ -90,29 +147,120 @@ def generate_advisories(crop: str, context: dict, climate: dict) -> dict:
     }
 
 
-def _process_current_mode(request: PredictionRequest) -> tuple[list[dict], dict]:
-    features, climate_meta = generate_features(request.model_dump(mode="json"), crop_name=None)
-    return predict_top_crops(features, top_n=5), climate_meta
+def _build_candidate(
+    crop_name: str,
+    features: dict[str, float],
+    climate_meta: dict[str, Any],
+    mode: str,
+) -> dict[str, Any]:
+    model_supported = crop_name in _model_crop_set()
+    ml_confidence = get_crop_probability(features, crop_name) if model_supported else 0.0
+    profile_fit = get_training_profile_fit(crop_name, features) if model_supported else {}
+    warnings = validate_inference_input(features, crop_name if model_supported else None)
+    if warnings:
+        logger.warning("Input range warnings for %s: %s", crop_name, warnings)
+
+    categories = _load_crop_categories()
+    return {
+        "crop": crop_name,
+        "ml_confidence": round(float(ml_confidence), 6),
+        "model_supported": model_supported,
+        "profile_fit": round(float(profile_fit.get("overall", 0.0)), 6) if profile_fit else 0.0,
+        "training_soil_fit": round(float(profile_fit.get("soil_fit", 0.0)), 6) if profile_fit else 0.0,
+        "training_climate_fit": round(float(profile_fit.get("climate_fit", 0.0)), 6) if profile_fit else 0.0,
+        "season_allowed": True,
+        "category": categories.get(crop_name, ""),
+        "tags": [mode, climate_meta.get("source", "")],
+        "temperature": float(climate_meta.get("temperature", features.get("temperature", 0.0))),
+        "humidity": float(climate_meta.get("humidity", features.get("humidity", 0.0))),
+        "rainfall": float(climate_meta.get("rainfall", features.get("rainfall", 0.0))),
+        "growing_duration": f"{get_crop_duration(crop_name)} months",
+    }
 
 
-def _process_planning_mode(request: PredictionRequest) -> tuple[list[dict], dict]:
-    # Phase 1: Pre-filter by season
-    valid_crops = _prefilter_crops_for_season(str(request.farmingMonth))
-    
-    all_candidates: list[dict] = []
-    sample_climate: dict[str, Any] | None = None
+def _process_current_mode(request: PredictionRequest, candidate_crops: list[str]) -> tuple[list[dict], dict[str, Any]]:
+    payload = request.model_dump(mode="json")
+    features, climate_meta = generate_features(payload)
+    distribution = predict_probability_distribution(features)
+    probability_map = {row["crop"]: float(row["ml_confidence"]) for row in distribution}
 
-    for crop in valid_crops:
-        features, climate_meta = generate_features(request.model_dump(mode="json"), crop_name=crop)
-        distribution = predict_probability_distribution(features)
-        crop_prob = next((row["ml_confidence"] for row in distribution if row["crop"] == crop), 0.0)
-        
-        all_candidates.append({"crop": crop, "ml_confidence": crop_prob})
-        if sample_climate is None:
-            sample_climate = climate_meta
+    candidates = []
+    for crop_name in candidate_crops:
+        model_supported = crop_name in _model_crop_set()
+        profile_fit = get_training_profile_fit(crop_name, features) if model_supported else {}
+        candidates.append(
+            {
+                "crop": crop_name,
+                "ml_confidence": round(float(probability_map.get(crop_name, 0.0)), 6),
+                "model_supported": model_supported,
+                "profile_fit": round(float(profile_fit.get("overall", 0.0)), 6) if profile_fit else 0.0,
+                "training_soil_fit": round(float(profile_fit.get("soil_fit", 0.0)), 6) if profile_fit else 0.0,
+                "training_climate_fit": round(float(profile_fit.get("climate_fit", 0.0)), 6) if profile_fit else 0.0,
+                "season_allowed": True,
+                "category": _load_crop_categories().get(crop_name, ""),
+                "tags": ["current", climate_meta.get("source", "")],
+                "temperature": float(climate_meta.get("temperature", features.get("temperature", 0.0))),
+                "humidity": float(climate_meta.get("humidity", features.get("humidity", 0.0))),
+                "rainfall": float(climate_meta.get("rainfall", features.get("rainfall", 0.0))),
+                "growing_duration": f"{get_crop_duration(crop_name)} months",
+            }
+        )
 
-    all_candidates.sort(key=lambda row: row["ml_confidence"], reverse=True)
-    return all_candidates[:8], sample_climate or {}
+    warnings = validate_inference_input(features)
+    if warnings:
+        logger.warning("Current-mode input range warnings: %s", warnings)
+
+    return candidates, climate_meta
+
+
+def _process_planning_mode(
+    request: PredictionRequest,
+    candidate_crops: list[str],
+) -> tuple[list[dict], dict[str, dict[str, Any]]]:
+    payload = request.model_dump(mode="json")
+    candidates = []
+    climate_by_crop: dict[str, dict[str, Any]] = {}
+
+    for crop_name in candidate_crops:
+        features, climate_meta = generate_features(payload, crop_name=crop_name)
+        candidates.append(_build_candidate(crop_name, features, climate_meta, mode="planning"))
+        climate_by_crop[crop_name] = climate_meta
+
+    return candidates, climate_by_crop
+
+
+def _select_climate_meta(mode: str, adjusted: list[dict], planning_climate_map, current_climate_meta):
+    if mode == "current":
+        return current_climate_meta
+    if not adjusted:
+        return {"temperature": None, "humidity": None, "rainfall": None, "source": "historical_average", "months_covered": None}
+    top_crop = adjusted[0]["crop"]
+    return planning_climate_map.get(top_crop, {})
+
+
+def _format_recommendation(row: dict, rank: int, climate_meta: dict[str, Any]) -> dict[str, Any]:
+    rec = {
+        "rank": rank,
+        "crop": row["crop"],
+        "confidence": round(float(row["final_confidence"]), 2),
+        "ml_score": round(float(row["ml_confidence"]), 2),
+        "rule_adjustment": row["rule_adjustment"],
+        "season": row["season"],
+        "growing_duration": row["growing_duration"],
+        "reason": row["reason"],
+        "advisories": row["advisories"] if row.get("advisories") else generate_advisories(row["crop"], climate_meta),
+    }
+    if row.get("display_name"):
+        rec["display_name"] = row.get("display_name")
+        rec["hindi_name"] = row.get("hindi_name")
+        rec["sowing_months"] = row.get("sowing_months", [])
+        rec["tags"] = row.get("tags", [])
+        rec["category"] = row.get("category", "")
+        rec["farming_plan"] = row.get("farming_plan", {})
+        rec["fertilizer_plan_detailed"] = row.get("full_fertilizer_plan", {})
+        rec["irrigation_plan_detailed"] = row.get("full_irrigation_plan", {})
+        rec["detailed_reasons"] = row.get("detailed_reasons", [])
+    return rec
 
 
 def get_recommendations(raw_payload: dict) -> dict:
@@ -120,22 +268,40 @@ def get_recommendations(raw_payload: dict) -> dict:
     start_time = time.time()
     request = PredictionRequest(**raw_payload)
     mode = request.activeTab.value
+    farming_month = request.farmingMonth if mode == "planning" else _current_month_name()
+    detected_season = detect_season(farming_month)
+    candidate_crops = _get_candidate_crops(detected_season, mode)
+
+    logger.info("Mode=%s season=%s candidates=%s", mode, detected_season, candidate_crops)
 
     if mode == "current":
-        candidates, climate_meta = _process_current_mode(request)
+        candidates, current_climate_meta = _process_current_mode(request, candidate_crops)
+        planning_climate_map = None
     else:
-        candidates, climate_meta = _process_planning_mode(request)
+        candidates, planning_climate_map = _process_planning_mode(request, candidate_crops)
+        current_climate_meta = None
 
-    farming_month = request.farmingMonth or _current_month_name()
     context = {
         "state": request.state,
         "farming_month": farming_month,
         "previous_crop": request.previousCrop,
         "previous_crop_month": request.previousCropMonth,
         "land_area": request.farm_size_float,
-        "avg_rainfall": climate_meta["rainfall"],
-        "temperature": climate_meta["temperature"],
-        "humidity": climate_meta["humidity"],
+        "avg_rainfall": (
+            current_climate_meta["rainfall"]
+            if current_climate_meta
+            else sum(item["rainfall"] for item in planning_climate_map.values()) / max(len(planning_climate_map), 1)
+        ),
+        "temperature": (
+            current_climate_meta["temperature"]
+            if current_climate_meta
+            else sum(item["temperature"] for item in planning_climate_map.values()) / max(len(planning_climate_map), 1)
+        ),
+        "humidity": (
+            current_climate_meta["humidity"]
+            if current_climate_meta
+            else sum(item["humidity"] for item in planning_climate_map.values()) / max(len(planning_climate_map), 1)
+        ),
         "N": request.N,
         "P": request.P,
         "K": request.K,
@@ -143,57 +309,20 @@ def get_recommendations(raw_payload: dict) -> dict:
         "mode": mode,
     }
 
-    # Pass to rules layer (which now uses CropKnowledgeBase)
     adjusted = apply_all_rules(candidates, context)
-    
-    # Return TOP 3 crops
-    top_n = adjusted[:3]
+    top_rows = adjusted[:3]
+    selected_climate = _select_climate_meta(mode, top_rows, planning_climate_map, current_climate_meta)
 
     warnings: list[str] = []
-    if request.N == 0 and request.P == 0 and request.K == 0:
-        warnings.append("All soil nutrient values are zero; recommendation confidence may be lower.")
-    if request.pH <= 0:
-        warnings.append("pH value is unusual; please verify soil reading.")
-    if top_n and max(row["final_confidence"] for row in top_n) < 0.30:
-        warnings.append("Low-confidence recommendation. Cross-check with local agronomy expert.")
+    if top_rows and float(top_rows[0]["final_confidence"]) < 0.40:
+        warnings.append("Top recommendation confidence is still low. Cross-check with a local agronomy expert.")
+    if mode == "planning":
+        warnings.append("Planning mode uses seasonal filtering and crop-window climate estimates.")
 
-    output_recommendations = []
-    for index, row in enumerate(top_n):
-        # Format the final dictionary conforming to the standard + extra fields from KB
-        crop_name = row["crop"]
-        
-        # Populate fallbacks if crop was completely unknown
-        if "display_name" not in row:
-            row["advisories"] = generate_advisories(crop_name, context=context, climate=climate_meta)
-            row["growing_duration"] = f"{get_crop_duration(crop_name)} months"
-            row["season"] = detect_season(farming_month)
-
-        rec = {
-            "rank": index + 1,
-            "crop": crop_name,
-            "confidence": round(row["final_confidence"], 2),
-            "ml_score": round(row["ml_confidence"], 2),
-            "rule_adjustment": row["rule_adjustment"],
-            "season": row["season"],
-            "growing_duration": row["growing_duration"],
-            "reason": row["reason"],
-            "advisories": row["advisories"],
-        }
-        
-        # Merge extra fields requested by user (display name, tags, farming plan, etc)
-        # We put them directly into the dict so that they are "extra fields"
-        if "display_name" in row:
-            rec["display_name"] = row.get("display_name")
-            rec["hindi_name"] = row.get("hindi_name")
-            rec["sowing_months"] = row.get("sowing_months", [])
-            rec["tags"] = row.get("tags", [])
-            rec["category"] = row.get("category", "")
-            rec["farming_plan"] = row.get("farming_plan", {})
-            rec["fertilizer_plan_detailed"] = row.get("full_fertilizer_plan", {})
-            rec["irrigation_plan_detailed"] = row.get("full_irrigation_plan", {})
-            rec["detailed_reasons"] = row.get("detailed_reasons", [])
-            
-        output_recommendations.append(rec)
+    output_recommendations = [
+        _format_recommendation(row, rank=index + 1, climate_meta=selected_climate)
+        for index, row in enumerate(top_rows)
+    ]
 
     processing_time = int((time.time() - start_time) * 1000)
 
@@ -204,25 +333,37 @@ def get_recommendations(raw_payload: dict) -> dict:
             "state": request.state,
             "district": request.district,
             "farming_month": farming_month,
-            "season": detect_season(farming_month),
+            "season": detected_season,
             "farm_size_acres": request.farm_size_float,
             "previous_crop": request.previousCrop or "None",
             "soil_profile": f"N:{request.N} P:{request.P} K:{request.K} pH:{request.pH}",
         },
         "climate_used": {
-            "temperature": climate_meta["temperature"],
-            "humidity": climate_meta["humidity"],
-            "rainfall": climate_meta["rainfall"],
-            "source": climate_meta["source"],
-            "months_covered": climate_meta.get("months_covered"),
+            "temperature": selected_climate.get("temperature"),
+            "humidity": selected_climate.get("humidity"),
+            "rainfall": selected_climate.get("rainfall"),
+            "source": selected_climate.get("source", "historical_average"),
+            "months_covered": selected_climate.get("months_covered"),
         },
         "recommendations": output_recommendations,
         "metadata": {
-            "total_crops_evaluated": len(adjusted),
-            "rules_applied": ["knowledge_base_season", "climate_fit", "soil_nutrition", "crop_rotation", "farm_size", "regional_suitability", "water_needs"],
+            "total_crops_evaluated": len(candidates),
+            "season_detected": detected_season,
+            "farming_month": farming_month,
+            "valid_crops_for_season": candidate_crops,
+            "rules_applied": [
+                "hard_season_filter",
+                "model_probability",
+                "training_profile_fit",
+                "knowledge_base_fit",
+                "rotation",
+                "regional_fit",
+                "farm_size",
+                "water_suitability",
+            ],
             "processing_time_ms": processing_time,
-            "model_version": "v2.0-KB",
+            "model_version": "v2.1-hybrid",
             "warnings": warnings,
-            "disclaimer": "AI-based advisory. Consult local agricultural experts.",
+            "disclaimer": "AI-based advisory. Consult local agricultural experts before final planting decisions.",
         },
     }

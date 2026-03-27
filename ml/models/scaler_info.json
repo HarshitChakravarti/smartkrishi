@@ -1,0 +1,29 @@
+{
+  "feature_order": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "means": {
+    "N": 50.547727,
+    "P": 53.339773,
+    "K": 48.143182,
+    "temperature": 25.609409,
+    "humidity": 71.416762,
+    "ph": 6.47383,
+    "rainfall": 103.45159
+  },
+  "scales": {
+    "N": 36.852347,
+    "P": 32.938258,
+    "K": 50.694394,
+    "temperature": 5.078928,
+    "humidity": 22.274497,
+    "ph": 0.783068,
+    "rainfall": 54.97699
+  }
+}

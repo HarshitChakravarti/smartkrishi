@@ -1,0 +1,204 @@
+{
+  "feature_order": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall"
+  ],
+  "crop_classes": [
+    "apple",
+    "banana",
+    "blackgram",
+    "chickpea",
+    "coconut",
+    "coffee",
+    "cotton",
+    "grapes",
+    "jute",
+    "kidneybeans",
+    "lentil",
+    "maize",
+    "mango",
+    "mothbeans",
+    "mungbean",
+    "muskmelon",
+    "orange",
+    "papaya",
+    "pigeonpeas",
+    "pomegranate",
+    "rice",
+    "watermelon"
+  ],
+  "sample_count": 2200,
+  "class_count": 22,
+  "train_accuracy": 1.0,
+  "test_accuracy": 0.993182,
+  "oob_score": 0.996023,
+  "feature_importance": {
+    "rainfall": 0.221824,
+    "humidity": 0.216676,
+    "K": 0.180444,
+    "P": 0.152345,
+    "N": 0.104528,
+    "temperature": 0.072754,
+    "ph": 0.051429
+  },
+  "classification_report": {
+    "apple": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "banana": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "blackgram": {
+      "precision": 1.0,
+      "recall": 0.95,
+      "f1-score": 0.9743589743589743,
+      "support": 20.0
+    },
+    "chickpea": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "coconut": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "coffee": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "cotton": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "grapes": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "jute": {
+      "precision": 0.9523809523809523,
+      "recall": 1.0,
+      "f1-score": 0.975609756097561,
+      "support": 20.0
+    },
+    "kidneybeans": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "lentil": {
+      "precision": 1.0,
+      "recall": 0.95,
+      "f1-score": 0.9743589743589743,
+      "support": 20.0
+    },
+    "maize": {
+      "precision": 0.9523809523809523,
+      "recall": 1.0,
+      "f1-score": 0.975609756097561,
+      "support": 20.0
+    },
+    "mango": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "mothbeans": {
+      "precision": 0.9523809523809523,
+      "recall": 1.0,
+      "f1-score": 0.975609756097561,
+      "support": 20.0
+    },
+    "mungbean": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "muskmelon": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "orange": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "papaya": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "pigeonpeas": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "pomegranate": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "rice": {
+      "precision": 1.0,
+      "recall": 0.95,
+      "f1-score": 0.9743589743589743,
+      "support": 20.0
+    },
+    "watermelon": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 20.0
+    },
+    "accuracy": 0.9931818181818182,
+    "macro avg": {
+      "precision": 0.9935064935064936,
+      "recall": 0.993181818181818,
+      "f1-score": 0.9931775541531639,
+      "support": 440.0
+    },
+    "weighted avg": {
+      "precision": 0.9935064935064934,
+      "recall": 0.9931818181818182,
+      "f1-score": 0.9931775541531639,
+      "support": 440.0
+    }
+  },
+  "confidence_distribution": {
+    "mean_top_confidence": 0.944472,
+    "min_top_confidence": 0.470921,
+    "max_top_confidence": 1.0,
+    "samples_gt_070": 424,
+    "samples_gt_050": 438,
+    "samples_lt_030": 0
+  }
+}

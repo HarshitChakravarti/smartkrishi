@@ -12,8 +12,12 @@ CLIMATE_DIR = os.path.join(DATA_DIR, "climate")
 MODEL_PATH = os.path.join(MODELS_DIR, "model.pkl")
 SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
 ENCODER_PATH = os.path.join(MODELS_DIR, "label_encoder.pkl")
+FEATURE_ORDER_PATH = os.path.join(MODELS_DIR, "feature_order.json")
+SCALER_INFO_PATH = os.path.join(MODELS_DIR, "scaler_info.json")
+MODEL_METRICS_PATH = os.path.join(MODELS_DIR, "model_metrics.json")
 
 DATASET_PATH = os.path.join(DATA_DIR, "crop_recommendation.csv")
+TRAINING_PROFILES_PATH = os.path.join(DATA_DIR, "training_crop_profiles.json")
 
 RAINFALL_DATA_PATH = os.path.join(CLIMATE_DIR, "rainfall_by_state_month.json")
 TEMPERATURE_DATA_PATH = os.path.join(CLIMATE_DIR, "temperature_by_state_month.json")
@@ -23,7 +27,18 @@ CROP_FAMILIES_PATH = os.path.join(DATA_DIR, "crop_families.json")
 SEASONAL_CROPS_PATH = os.path.join(DATA_DIR, "seasonal_crops.json")
 CROP_KB_PATH = os.path.join(DATA_DIR, "crop_knowledge_base.json")
 
-FEATURE_COLUMNS = ["N", "P", "K", "pH", "temperature", "humidity", "rainfall"]
+# This order must match the raw training CSV columns exactly.
+FEATURE_COLUMNS = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+
+FEATURE_NAME_ALIASES = {
+    "N": ("N",),
+    "P": ("P",),
+    "K": ("K",),
+    "temperature": ("temperature",),
+    "humidity": ("humidity",),
+    "ph": ("ph", "pH"),
+    "rainfall": ("rainfall",),
+}
 
 SEASONS = {
     "Kharif": [6, 7, 8, 9],
