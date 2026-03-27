@@ -1,5 +1,25 @@
 {
+  "model_type": "XGBoost",
+  "sample_count": 4800,
+  "class_count": 24,
   "feature_order": [
+    "N",
+    "P",
+    "K",
+    "temperature",
+    "humidity",
+    "ph",
+    "rainfall",
+    "temp_humidity_ratio",
+    "npk_total",
+    "n_ratio",
+    "p_ratio",
+    "k_ratio",
+    "rain_temp_product",
+    "ph_category",
+    "moisture_index"
+  ],
+  "base_features": [
     "N",
     "P",
     "K",
@@ -8,197 +28,81 @@
     "ph",
     "rainfall"
   ],
-  "crop_classes": [
-    "apple",
-    "banana",
-    "blackgram",
-    "chickpea",
-    "coconut",
-    "coffee",
-    "cotton",
-    "grapes",
-    "jute",
-    "kidneybeans",
-    "lentil",
-    "maize",
-    "mango",
-    "mothbeans",
-    "mungbean",
-    "muskmelon",
-    "orange",
-    "papaya",
-    "pigeonpeas",
-    "pomegranate",
-    "rice",
-    "watermelon"
+  "derived_features": [
+    "temp_humidity_ratio",
+    "npk_total",
+    "n_ratio",
+    "p_ratio",
+    "k_ratio",
+    "rain_temp_product",
+    "ph_category",
+    "moisture_index"
   ],
-  "sample_count": 2200,
-  "class_count": 22,
-  "train_accuracy": 1.0,
-  "test_accuracy": 0.993182,
-  "oob_score": 0.996023,
-  "feature_importance": {
-    "rainfall": 0.221824,
-    "humidity": 0.216676,
-    "K": 0.180444,
-    "P": 0.152345,
-    "N": 0.104528,
-    "temperature": 0.072754,
-    "ph": 0.051429
-  },
-  "classification_report": {
-    "apple": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
+  "accuracy": 0.941667,
+  "model_selection": {
+    "RandomForest": {
+      "accuracy": 0.940625,
+      "avg_correct_confidence": 0.9079269937949339,
+      "mean_top_confidence": 0.8860722908399471,
+      "median_top_confidence": 0.967,
+      "samples_gt_080": 761,
+      "samples_gt_060": 870,
+      "samples_lt_030": 2
     },
-    "banana": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
+    "CalibratedRF": {
+      "accuracy": 0.94375,
+      "avg_correct_confidence": 0.9213614602979845,
+      "mean_top_confidence": 0.9079222741750044,
+      "median_top_confidence": 0.9451458805735198,
+      "samples_gt_080": 872,
+      "samples_gt_060": 921,
+      "samples_lt_030": 1
     },
-    "blackgram": {
-      "precision": 1.0,
-      "recall": 0.95,
-      "f1-score": 0.9743589743589743,
-      "support": 20.0
-    },
-    "chickpea": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "coconut": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "coffee": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "cotton": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "grapes": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "jute": {
-      "precision": 0.9523809523809523,
-      "recall": 1.0,
-      "f1-score": 0.975609756097561,
-      "support": 20.0
-    },
-    "kidneybeans": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "lentil": {
-      "precision": 1.0,
-      "recall": 0.95,
-      "f1-score": 0.9743589743589743,
-      "support": 20.0
-    },
-    "maize": {
-      "precision": 0.9523809523809523,
-      "recall": 1.0,
-      "f1-score": 0.975609756097561,
-      "support": 20.0
-    },
-    "mango": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "mothbeans": {
-      "precision": 0.9523809523809523,
-      "recall": 1.0,
-      "f1-score": 0.975609756097561,
-      "support": 20.0
-    },
-    "mungbean": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "muskmelon": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "orange": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "papaya": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "pigeonpeas": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "pomegranate": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "rice": {
-      "precision": 1.0,
-      "recall": 0.95,
-      "f1-score": 0.9743589743589743,
-      "support": 20.0
-    },
-    "watermelon": {
-      "precision": 1.0,
-      "recall": 1.0,
-      "f1-score": 1.0,
-      "support": 20.0
-    },
-    "accuracy": 0.9931818181818182,
-    "macro avg": {
-      "precision": 0.9935064935064936,
-      "recall": 0.993181818181818,
-      "f1-score": 0.9931775541531639,
-      "support": 440.0
-    },
-    "weighted avg": {
-      "precision": 0.9935064935064934,
-      "recall": 0.9931818181818182,
-      "f1-score": 0.9931775541531639,
-      "support": 440.0
+    "XGBoost": {
+      "accuracy": 0.9416666666666667,
+      "avg_correct_confidence": 0.9730047583580017,
+      "mean_top_confidence": 0.9639193415641785,
+      "median_top_confidence": 0.9976772665977478,
+      "samples_gt_080": 902,
+      "samples_gt_060": 938,
+      "samples_lt_030": 2
     }
   },
-  "confidence_distribution": {
-    "mean_top_confidence": 0.944472,
-    "min_top_confidence": 0.470921,
-    "max_top_confidence": 1.0,
-    "samples_gt_070": 424,
-    "samples_gt_050": 438,
-    "samples_lt_030": 0
-  }
+  "scenario_validation": [
+    {
+      "name": "UP March (Zaid) - Muskmelon expected",
+      "expected": "muskmelon",
+      "expected_confidence": 0.6136164665222168,
+      "top_prediction": "muskmelon",
+      "top_confidence": 0.6136164665222168
+    },
+    {
+      "name": "Punjab June (Kharif) - Rice expected",
+      "expected": "rice",
+      "expected_confidence": 0.9488230347633362,
+      "top_prediction": "rice",
+      "top_confidence": 0.9488230347633362
+    },
+    {
+      "name": "MH November (Rabi) - Chickpea expected",
+      "expected": "chickpea",
+      "expected_confidence": 0.017774032428860664,
+      "top_prediction": "mustard",
+      "top_confidence": 0.6181750893592834
+    },
+    {
+      "name": "WB July (Kharif) - Rice expected",
+      "expected": "rice",
+      "expected_confidence": 0.9993833303451538,
+      "top_prediction": "rice",
+      "top_confidence": 0.9993833303451538
+    },
+    {
+      "name": "Rajasthan Dec (Rabi dry) - Wheat expected",
+      "expected": "wheat",
+      "expected_confidence": 0.0013428344391286373,
+      "top_prediction": "mustard",
+      "top_confidence": 0.8986496925354004
+    }
+  ]
 }

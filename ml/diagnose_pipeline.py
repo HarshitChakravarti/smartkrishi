@@ -18,7 +18,7 @@ try:
         SCALER_PATH,
         TEMPERATURE_DATA_PATH,
     )
-    from .model import get_all_crop_names, predict_top_crops
+    from .model import build_feature_frame, get_all_crop_names, predict_top_crops
     from .pipeline import get_recommendations
 except ImportError:  # pragma: no cover
     from config import (  # type: ignore
@@ -30,7 +30,7 @@ except ImportError:  # pragma: no cover
         SCALER_PATH,
         TEMPERATURE_DATA_PATH,
     )
-    from model import get_all_crop_names, predict_top_crops  # type: ignore
+    from model import build_feature_frame, get_all_crop_names, predict_top_crops  # type: ignore
     from pipeline import get_recommendations  # type: ignore
 
 
@@ -63,20 +63,35 @@ def _dataset_diagnostic(df: pd.DataFrame) -> None:
 def _feature_contract_diagnostic() -> None:
     _header("FEATURE CONTRACT DIAGNOSTIC")
     print(f"Configured feature order: {FEATURE_COLUMNS}")
+    saved = {}
     if Path(FEATURE_ORDER_PATH).exists():
-        feature_order = _load_json(FEATURE_ORDER_PATH).get("feature_order", [])
+        saved = _load_json(FEATURE_ORDER_PATH)
+        feature_order = saved.get("feature_order", [])
         print(f"Saved feature order:      {feature_order}")
+        if saved.get("base_features"):
+            print(f"Saved base features:     {saved.get('base_features')}")
+        if saved.get("derived_features"):
+            print(f"Saved derived features:  {saved.get('derived_features')}")
     else:
         print("Saved feature order:      MISSING")
 
     scaler = joblib.load(SCALER_PATH)
-    sample = pd.DataFrame([[80, 40, 40, 28, 72, 6.5, 145]], columns=FEATURE_COLUMNS)
+    sample_features = {
+        "N": 80,
+        "P": 40,
+        "K": 40,
+        "temperature": 28,
+        "humidity": 72,
+        "pH": 6.5,
+        "rainfall": 145,
+    }
+    sample = build_feature_frame(sample_features)
     scaled = scaler.transform(sample)
     print("\nScaler means:", scaler.mean_)
     print("Scaler scales:", scaler.scale_)
-    print("Sample raw:   ", sample.iloc[0].tolist())
+    print("Sample raw:   ", sample.iloc[0].round(3).tolist())
     print("Sample scaled:", scaled[0].round(3).tolist())
-    for name, value in zip(FEATURE_COLUMNS, scaled[0]):
+    for name, value in zip(sample.columns.tolist(), scaled[0]):
         status = "OK" if -3 <= value <= 3 else "OUT_OF_RANGE"
         print(f"  {name:12s} {value:8.3f} {status}")
 
@@ -270,17 +285,27 @@ def _pipeline_case_diagnostic() -> int:
         result = get_recommendations(case["input"])
         crops = [row["crop"] for row in result["recommendations"]]
         top_confidence = result["recommendations"][0]["confidence"] if result["recommendations"] else 0.0
+        top_ml = result["recommendations"][0]["ml_score"] if result["recommendations"] else 0.0
+        top_rule = (
+            abs(float(result["recommendations"][0]["rule_adjustment"]))
+            if result["recommendations"]
+            else 0.0
+        )
         has_expected = any(crop in case["expected_any"] for crop in crops)
         has_forbidden = any(crop in case["forbidden"] for crop in crops)
         season_ok = True
         if case["season"] is not None:
             season_ok = result["metadata"].get("season_detected") == case["season"]
         confidence_ok = top_confidence >= 0.40
-        case_passed = has_expected and not has_forbidden and season_ok and confidence_ok
+        ml_ok = top_ml >= 0.35
+        rule_ok = top_rule <= 0.25
+        case_passed = has_expected and not has_forbidden and season_ok and confidence_ok and ml_ok and rule_ok
         status = "PASS" if case_passed else "FAIL"
         print(f"\n{status:4s} {case['name']}")
         print(f"  Season: {result['metadata'].get('season_detected')}")
         print(f"  Top confidence: {top_confidence:.2f}")
+        print(f"  Top ML score:   {top_ml:.2f}")
+        print(f"  Top rule adj:   {top_rule:.2f}")
         for rec in result["recommendations"]:
             print(f"  - {rec['crop']:12s} conf={rec['confidence']:.2f} ml={rec['ml_score']:.2f}")
         if case_passed:

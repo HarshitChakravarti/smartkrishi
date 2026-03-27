@@ -52,6 +52,38 @@ def _current_month_name() -> str:
     return dt.datetime.now().strftime("%B")
 
 
+def _interpret_confidence(confidence: float) -> dict[str, str]:
+    """Convert raw confidence into a user-facing recommendation label."""
+    score = float(confidence)
+    if score >= 0.75:
+        return {
+            "level": "high",
+            "label": "Strong Match",
+            "color": "green",
+            "description": "Highly recommended for your farm conditions",
+        }
+    if score >= 0.50:
+        return {
+            "level": "good",
+            "label": "Good Match",
+            "color": "green",
+            "description": "Well-suited for your farm conditions",
+        }
+    if score >= 0.35:
+        return {
+            "level": "moderate",
+            "label": "Moderate Match",
+            "color": "amber",
+            "description": "Suitable, but review local conditions carefully",
+        }
+    return {
+        "level": "low",
+        "label": "Possible Option",
+        "color": "gray",
+        "description": "Use with caution and confirm locally before planting",
+    }
+
+
 @lru_cache(maxsize=1)
 def _load_seasonal_catalog() -> dict[str, list[str]]:
     path = Path(SEASONAL_CROPS_PATH)
@@ -94,15 +126,32 @@ def _is_supported_crop(crop_name: str) -> bool:
     return crop_name in _model_crop_set() or kb.has_crop(crop_name)
 
 
-def _get_candidate_crops(season: str, mode: str) -> list[str]:
+def _is_regionally_allowed(crop_name: str, state: str, mode: str) -> bool:
+    if mode != "planning" or not state:
+        return True
+    crop_profile = kb.get_crop(crop_name)
+    if not crop_profile:
+        return True
+    return crop_profile.get_regional_score(state) >= 0
+
+
+def _get_candidate_crops(season: str, mode: str, state: str = "") -> list[str]:
     catalog = _load_seasonal_catalog()
-    season_crops = [crop for crop in catalog.get(season, []) if _is_supported_crop(crop)]
-    perennial_crops = [crop for crop in catalog.get("Perennial", []) if _is_supported_crop(crop)]
+    season_crops = [
+        crop
+        for crop in catalog.get(season, [])
+        if _is_supported_crop(crop) and _is_regionally_allowed(crop, state, mode)
+    ]
+    perennial_crops = [
+        crop
+        for crop in catalog.get("Perennial", [])
+        if _is_supported_crop(crop) and _is_regionally_allowed(crop, state, mode)
+    ]
 
     if mode == "planning":
         candidates = season_crops
     else:
-        candidates = season_crops + perennial_crops
+        candidates = sorted({crop for crop in _model_crop_set() if _is_supported_crop(crop)})
 
     deduped = list(dict.fromkeys(candidates))
     if deduped:
@@ -226,6 +275,16 @@ def _process_planning_mode(
         candidates.append(_build_candidate(crop_name, features, climate_meta, mode="planning"))
         climate_by_crop[crop_name] = climate_meta
 
+    score_total = sum(max(float(candidate.get("ml_confidence", 0.0)), 0.0) for candidate in candidates)
+    if score_total > 0:
+        for candidate in candidates:
+            raw_score = float(candidate.get("ml_confidence", 0.0))
+            candidate["raw_ml_confidence"] = round(raw_score, 6)
+            candidate["ml_confidence"] = round(raw_score / score_total, 6)
+    else:
+        for candidate in candidates:
+            candidate["raw_ml_confidence"] = round(float(candidate.get("ml_confidence", 0.0)), 6)
+
     return candidates, climate_by_crop
 
 
@@ -245,6 +304,7 @@ def _format_recommendation(row: dict, rank: int, climate_meta: dict[str, Any]) -
         "confidence": round(float(row["final_confidence"]), 2),
         "ml_score": round(float(row["ml_confidence"]), 2),
         "rule_adjustment": row["rule_adjustment"],
+        "confidence_interpretation": _interpret_confidence(float(row["final_confidence"])),
         "season": row["season"],
         "growing_duration": row["growing_duration"],
         "reason": row["reason"],
@@ -270,7 +330,7 @@ def get_recommendations(raw_payload: dict) -> dict:
     mode = request.activeTab.value
     farming_month = request.farmingMonth if mode == "planning" else _current_month_name()
     detected_season = detect_season(farming_month)
-    candidate_crops = _get_candidate_crops(detected_season, mode)
+    candidate_crops = _get_candidate_crops(detected_season, mode, request.state)
 
     logger.info("Mode=%s season=%s candidates=%s", mode, detected_season, candidate_crops)
 
@@ -362,7 +422,7 @@ def get_recommendations(raw_payload: dict) -> dict:
                 "water_suitability",
             ],
             "processing_time_ms": processing_time,
-            "model_version": "v2.1-hybrid",
+            "model_version": "v2.2-confidence",
             "warnings": warnings,
             "disclaimer": "AI-based advisory. Consult local agricultural experts before final planting decisions.",
         },

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from .climate_alignment import align_climate_record
     from .config import (
         CROP_DURATION_PATH,
         DEFAULT_CLIMATE,
@@ -20,6 +21,7 @@ try:
         TEMPERATURE_DATA_PATH,
     )
 except ImportError:  # pragma: no cover
+    from climate_alignment import align_climate_record  # type: ignore
     from config import (  # type: ignore
         CROP_DURATION_PATH,
         DEFAULT_CLIMATE,
@@ -48,6 +50,14 @@ def _payload_ph(payload: dict[str, Any]) -> float:
     if payload.get("ph") is not None:
         return float(payload["ph"])
     raise KeyError("Missing pH/ph in payload")
+
+
+def _window_weights(length: int) -> list[float]:
+    if length <= 0:
+        raise ValueError("Window length must be positive")
+    raw = [length - index for index in range(length)]
+    total = sum(raw)
+    return [value / total for value in raw]
 
 
 def _load_json(path: str) -> dict[str, Any]:
@@ -203,39 +213,51 @@ def _lookup_with_fallback(dataset: dict[str, dict[str, float]], state: str, mont
 
 
 def compute_climate_for_window(state: str, month_window: list[str]) -> dict[str, Any]:
-    """Average climate across a month window for a state with fallback chaining."""
+    """Weighted climate across a month window for a state with fallback chaining."""
     rainfall_data, temperature_data, humidity_data = load_climate_data()
+    weights = _window_weights(len(month_window))
 
     rainfall_values = [_lookup_with_fallback(rainfall_data, state, month, "rainfall") for month in month_window]
     temperature_values = [_lookup_with_fallback(temperature_data, state, month, "temperature") for month in month_window]
     humidity_values = [_lookup_with_fallback(humidity_data, state, month, "humidity") for month in month_window]
 
+    def weighted(values: list[float]) -> float:
+        return sum(value * weight for value, weight in zip(values, weights))
+
     return {
-        "temperature": round(sum(temperature_values) / len(temperature_values), 2),
-        "humidity": round(sum(humidity_values) / len(humidity_values), 2),
-        "rainfall": round(sum(rainfall_values) / len(rainfall_values), 2),
+        "temperature": round(weighted(temperature_values), 2),
+        "humidity": round(weighted(humidity_values), 2),
+        "rainfall": round(weighted(rainfall_values), 2),
         "source": "historical_average",
         "months_covered": month_window,
+        "weights": [round(weight, 3) for weight in weights],
     }
 
 
 def generate_features_current_mode(payload: dict[str, Any]) -> tuple[dict[str, float], dict[str, Any]]:
     """Use incoming live weather directly for current conditions mode."""
+    raw_climate = {
+        "temperature": float(payload["temperature"]),
+        "humidity": float(payload["humidity"]),
+        "rainfall": float(payload["rainfall"]),
+    }
+    aligned_climate = align_climate_record(raw_climate, source="live_weather")
     feature_vector = {
         "N": float(payload["N"]),
         "P": float(payload["P"]),
         "K": float(payload["K"]),
         "pH": _payload_ph(payload),
-        "temperature": float(payload["temperature"]),
-        "humidity": float(payload["humidity"]),
-        "rainfall": float(payload["rainfall"]),
+        "temperature": aligned_climate["temperature"],
+        "humidity": aligned_climate["humidity"],
+        "rainfall": aligned_climate["rainfall"],
     }
     climate_meta = {
-        "temperature": feature_vector["temperature"],
-        "humidity": feature_vector["humidity"],
-        "rainfall": feature_vector["rainfall"],
+        "temperature": raw_climate["temperature"],
+        "humidity": raw_climate["humidity"],
+        "rainfall": raw_climate["rainfall"],
         "source": "live_weather",
         "months_covered": None,
+        "aligned_for_model": aligned_climate,
     }
     return feature_vector, climate_meta
 
@@ -245,16 +267,18 @@ def generate_features_planning_mode(payload: dict[str, Any], crop_name: str) -> 
     duration = get_crop_duration(crop_name)
     month_window = compute_growing_window(str(payload["farmingMonth"]), duration)
     climate = compute_climate_for_window(str(payload["state"]), month_window)
+    aligned_climate = align_climate_record(climate, source=str(climate.get("source", "historical_average")))
 
     feature_vector = {
         "N": float(payload["N"]),
         "P": float(payload["P"]),
         "K": float(payload["K"]),
         "pH": _payload_ph(payload),
-        "temperature": float(climate["temperature"]),
-        "humidity": float(climate["humidity"]),
-        "rainfall": float(climate["rainfall"]),
+        "temperature": float(aligned_climate["temperature"]),
+        "humidity": float(aligned_climate["humidity"]),
+        "rainfall": float(aligned_climate["rainfall"]),
     }
+    climate["aligned_for_model"] = aligned_climate
     return feature_vector, climate
 
 

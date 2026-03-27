@@ -92,12 +92,20 @@ class Advisory(BaseModel):
     weather_note: str
 
 
+class ConfidenceInterpretation(BaseModel):
+    level: str
+    label: str
+    color: str
+    description: str
+
+
 class CropRecommendation(BaseModel):
     rank: int
     crop: str
     confidence: float = Field(..., ge=0, le=1)
     ml_score: float
     rule_adjustment: str
+    confidence_interpretation: ConfidenceInterpretation
     season: str
     growing_duration: str
     reason: str

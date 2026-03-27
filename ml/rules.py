@@ -7,10 +7,56 @@ from functools import lru_cache
 from pathlib import Path
 
 try:
-    from .config import CROP_FAMILIES_PATH, SEASONS
+    from .config import (
+        ACCEPTABLE_CLIMATE_BOOST,
+        BAD_PREDECESSOR_PENALTY,
+        BEST_STATE_BOOST,
+        CORRECT_SEASON_BOOST,
+        CROP_FAMILIES_PATH,
+        EXCELLENT_CLIMATE_BOOST,
+        EXCELLENT_SOIL_BOOST,
+        FARM_SIZE_BOOST,
+        FARM_SIZE_PENALTY,
+        IDEAL_ROTATION_BOOST,
+        IDEAL_SOWING_MONTH_BOOST,
+        MAX_NEGATIVE_ADJUSTMENT,
+        MAX_POSITIVE_ADJUSTMENT,
+        MODERATE_STATE_BOOST,
+        PERENNIAL_NEUTRAL,
+        POOR_CLIMATE_PENALTY,
+        POOR_SOIL_PENALTY,
+        SAME_CROP_ROTATION_PENALTY,
+        SEASONS,
+        UNSUITABLE_STATE_PENALTY,
+        WATER_SHORTAGE_PENALTY,
+        WRONG_SEASON_PENALTY,
+    )
     from .crop_knowledge import CropKnowledgeBase
 except ImportError:  # pragma: no cover
-    from config import CROP_FAMILIES_PATH, SEASONS  # type: ignore
+    from config import (  # type: ignore
+        ACCEPTABLE_CLIMATE_BOOST,
+        BAD_PREDECESSOR_PENALTY,
+        BEST_STATE_BOOST,
+        CORRECT_SEASON_BOOST,
+        CROP_FAMILIES_PATH,
+        EXCELLENT_CLIMATE_BOOST,
+        EXCELLENT_SOIL_BOOST,
+        FARM_SIZE_BOOST,
+        FARM_SIZE_PENALTY,
+        IDEAL_ROTATION_BOOST,
+        IDEAL_SOWING_MONTH_BOOST,
+        MAX_NEGATIVE_ADJUSTMENT,
+        MAX_POSITIVE_ADJUSTMENT,
+        MODERATE_STATE_BOOST,
+        PERENNIAL_NEUTRAL,
+        POOR_CLIMATE_PENALTY,
+        POOR_SOIL_PENALTY,
+        SAME_CROP_ROTATION_PENALTY,
+        SEASONS,
+        UNSUITABLE_STATE_PENALTY,
+        WATER_SHORTAGE_PENALTY,
+        WRONG_SEASON_PENALTY,
+    )
     from crop_knowledge import CropKnowledgeBase  # type: ignore
 
 kb = CropKnowledgeBase()
@@ -18,6 +64,10 @@ kb = CropKnowledgeBase()
 
 def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, float(value)))
+
+
+def _clamp(value: float, lower: float, upper: float) -> float:
+    return max(lower, min(upper, float(value)))
 
 
 def detect_season(month_name: str) -> str:
@@ -267,8 +317,18 @@ def _compute_agronomic_score(
     )
 
 
+def _fit_adjustment(score: float, excellent_boost: float, acceptable_boost: float, poor_penalty: float) -> float:
+    if score >= 0.82:
+        return excellent_boost
+    if score >= 0.62:
+        return acceptable_boost
+    if score < 0.40:
+        return poor_penalty
+    return 0.0
+
+
 def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
-    """Blend ML evidence with agronomic fit and build explanations."""
+    """Apply capped agronomic adjustments on top of ML confidence."""
     enhanced_candidates = []
     mode = str(context.get("mode", "")).lower()
     farming_month = str(context.get("farming_month", ""))
@@ -321,11 +381,71 @@ def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
             water_score=water_score,
         )
 
+        adjustments: list[tuple[float, str]] = []
+
+        if crop_profile and crop_profile.is_perennial:
+            adjustments.append((PERENNIAL_NEUTRAL, "Perennial crops stay eligible across seasons"))
+        elif season_score >= 0.95:
+            adjustments.append((IDEAL_SOWING_MONTH_BOOST, season_reason))
+        elif season_score >= 0.50:
+            adjustments.append((CORRECT_SEASON_BOOST, season_reason))
+        elif season_score <= 0.0:
+            adjustments.append((WRONG_SEASON_PENALTY, season_reason))
+
+        climate_adjustment = _fit_adjustment(
+            climate_score,
+            EXCELLENT_CLIMATE_BOOST,
+            ACCEPTABLE_CLIMATE_BOOST,
+            POOR_CLIMATE_PENALTY,
+        )
+        if climate_adjustment:
+            adjustments.append((climate_adjustment, climate_reason))
+
+        soil_adjustment = _fit_adjustment(
+            soil_score,
+            EXCELLENT_SOIL_BOOST,
+            0.0,
+            POOR_SOIL_PENALTY,
+        )
+        if soil_adjustment:
+            adjustments.append((soil_adjustment, soil_reason))
+
+        if mode == "planning":
+            if rotation_score >= 0.90:
+                adjustments.append((IDEAL_ROTATION_BOOST, rotation_reason))
+            elif rotation_score <= 0.10:
+                adjustments.append((SAME_CROP_ROTATION_PENALTY, rotation_reason))
+            elif rotation_score < 0.45:
+                adjustments.append((BAD_PREDECESSOR_PENALTY, rotation_reason))
+
+        if regional_score >= 1.0:
+            adjustments.append((BEST_STATE_BOOST, regional_reason))
+        elif regional_score >= 0.75:
+            adjustments.append((MODERATE_STATE_BOOST, regional_reason))
+        elif regional_score <= 0.25:
+            adjustments.append((UNSUITABLE_STATE_PENALTY, regional_reason))
+
+        if farm_size_score >= 0.95:
+            adjustments.append((FARM_SIZE_BOOST, "Farm size is well aligned"))
+        elif farm_size_score < 0.50:
+            adjustments.append((FARM_SIZE_PENALTY, farm_size_reason or "Farm size is below the ideal range"))
+
+        if water_score < 0.45:
+            adjustments.append((WATER_SHORTAGE_PENALTY, water_reason or "Water availability is a constraint"))
+
+        total_adjustment = _clamp(
+            sum(adjustment for adjustment, _ in adjustments),
+            MAX_NEGATIVE_ADJUSTMENT,
+            MAX_POSITIVE_ADJUSTMENT,
+        )
+
         if candidate.get("model_supported", False):
-            model_weight = 0.35
-            final_confidence = _clamp01(model_weight * ml_score + (1.0 - model_weight) * agronomic_score)
+            if total_adjustment > 0:
+                total_adjustment *= max(0.20, 1.0 - ml_score)
+            final_confidence = _clamp01(ml_score + total_adjustment)
         else:
             final_confidence = agronomic_score
+            total_adjustment = final_confidence - ml_score
 
         reasons = [
             reason
@@ -340,11 +460,7 @@ def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
             ]
             if reason
         ]
-        positive_reasons = [
-            reason
-            for reason in [season_reason, climate_reason, soil_reason, rotation_reason, regional_reason, water_reason]
-            if reason and not reason.lower().startswith(("poor", "weak", "avoid", "water availability is a constraint"))
-        ]
+        positive_reasons = [reason for adjustment, reason in adjustments if adjustment > 0 and reason]
         reason_string = " + ".join(positive_reasons[:3]) if positive_reasons else (reasons[0] if reasons else "General agronomic fit")
 
         if crop_profile:
@@ -378,7 +494,7 @@ def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
                 "ml_confidence": round(ml_score, 6),
                 "agronomic_score": round(agronomic_score, 6),
                 "final_confidence": round(final_confidence, 6),
-                "rule_adjustment": f"{final_confidence - ml_score:+.2f}",
+                "rule_adjustment": f"{total_adjustment:+.2f}",
                 "reason": reason_string,
                 "detailed_reasons": reasons,
                 "season": detected_season,

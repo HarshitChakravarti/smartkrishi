@@ -23,6 +23,7 @@ try:
         SCALER_PATH,
         TRAINING_PROFILES_PATH,
     )
+    from .feature_engineering import BASE_FEATURES, compute_feature_map
 except ImportError:  # pragma: no cover
     from config import (  # type: ignore
         ENCODER_PATH,
@@ -34,6 +35,7 @@ except ImportError:  # pragma: no cover
         SCALER_PATH,
         TRAINING_PROFILES_PATH,
     )
+    from feature_engineering import BASE_FEATURES, compute_feature_map  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +59,15 @@ def load_model():
     if missing:
         raise FileNotFoundError(f"Missing model artifact(s): {', '.join(missing)}. Run ml/train_model.py first.")
 
-    model = joblib.load(MODEL_PATH)
+    try:
+        model = joblib.load(MODEL_PATH)
+    except ModuleNotFoundError as exc:
+        missing_module = str(exc).split("No module named ")[-1].strip("'\"")
+        raise ModuleNotFoundError(
+            "Model artifact requires an extra dependency that is not installed: "
+            f"{missing_module}. Install backend deps with 'pip install -r ml/requirements.txt'."
+        ) from exc
+
     scaler = joblib.load(SCALER_PATH)
     encoder = joblib.load(ENCODER_PATH)
     logger.info("Loaded model with %s crop classes", len(encoder.classes_))
@@ -71,6 +81,15 @@ def get_feature_order() -> list[str]:
     if isinstance(feature_order, list) and feature_order:
         return [str(name) for name in feature_order]
     return list(FEATURE_COLUMNS)
+
+
+@lru_cache(maxsize=1)
+def get_base_feature_order() -> list[str]:
+    saved = _safe_load_json(FEATURE_ORDER_PATH)
+    base_features = saved.get("base_features") if saved else None
+    if isinstance(base_features, list) and base_features:
+        return [str(name) for name in base_features]
+    return list(BASE_FEATURES)
 
 
 @lru_cache(maxsize=1)
@@ -91,7 +110,32 @@ def build_feature_frame(features: dict[str, Any]) -> pd.DataFrame:
     """Build a single-row frame in the exact training column order."""
     _, scaler, _ = load_model()
     artifact_order = list(getattr(scaler, "feature_names_in_", get_feature_order()))
-    ordered = {column: _lookup_feature_value(features, column) for column in artifact_order}
+
+    base_features = {
+        "N": _lookup_feature_value(features, "N"),
+        "P": _lookup_feature_value(features, "P"),
+        "K": _lookup_feature_value(features, "K"),
+        "temperature": _lookup_feature_value(features, "temperature"),
+        "humidity": _lookup_feature_value(features, "humidity"),
+        "ph": _lookup_feature_value(features, "ph"),
+        "rainfall": _lookup_feature_value(features, "rainfall"),
+    }
+    feature_map = compute_feature_map(base_features)
+    feature_map["pH"] = feature_map["ph"]
+
+    ordered: dict[str, float] = {}
+    for column in artifact_order:
+        if column in feature_map:
+            ordered[column] = float(feature_map[column])
+            continue
+        try:
+            ordered[column] = _lookup_feature_value(features, column)
+        except KeyError as exc:
+            raise KeyError(
+                f"Feature artifact expects '{column}', but it could not be built "
+                f"from the provided input keys {sorted(features.keys())}."
+            ) from exc
+
     return pd.DataFrame([ordered], columns=artifact_order)
 
 
@@ -193,7 +237,7 @@ def validate_inference_input(features: dict[str, Any], crop_name: str | None = N
         profile = profiles.get(str(crop_name).strip().lower())
         if profile:
             warnings: dict[str, str] = {}
-            for feature_name in get_feature_order():
+            for feature_name in get_base_feature_order():
                 value = _lookup_feature_value(features, feature_name)
                 stats = profile.get(feature_name)
                 if not stats:
@@ -206,7 +250,7 @@ def validate_inference_input(features: dict[str, Any], crop_name: str | None = N
             return warnings
 
     aggregated: dict[str, dict[str, float]] = {}
-    for feature_name in get_feature_order():
+    for feature_name in get_base_feature_order():
         mins = [float(profile[feature_name]["min"]) for profile in profiles.values() if feature_name in profile]
         maxs = [float(profile[feature_name]["max"]) for profile in profiles.values() if feature_name in profile]
         if mins and maxs:

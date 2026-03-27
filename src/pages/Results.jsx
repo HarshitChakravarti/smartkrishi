@@ -17,6 +17,23 @@ function formatConfidence(decimal) {
   return `${Math.round(Number(decimal || 0) * 100)}%`
 }
 
+function getConfidenceInterpretation(item) {
+  const parsed = item?.confidence_interpretation
+  if (parsed?.label) return parsed
+
+  const score = Number(item?.confidence || 0)
+  if (score >= 0.75) {
+    return { label: 'Strong Match', description: 'Highly recommended for your farm conditions' }
+  }
+  if (score >= 0.5) {
+    return { label: 'Good Match', description: 'Well-suited for your farm conditions' }
+  }
+  if (score >= 0.35) {
+    return { label: 'Moderate Match', description: 'Suitable with some local considerations' }
+  }
+  return { label: 'Possible Option', description: 'Confirm with local conditions before planting' }
+}
+
 function capitalizeCrop(name) {
   if (!name) return '--'
   return name.charAt(0).toUpperCase() + name.slice(1)
@@ -231,6 +248,7 @@ export default function Results() {
   }
 
   const topPick = recommendations[0]
+  const topPickInterpretation = getConfidenceInterpretation(topPick)
   const climate = result?.climate_used || {}
   const inputSummary = result?.input_summary || {}
   const metadata = result?.metadata || {}
@@ -257,7 +275,7 @@ export default function Results() {
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-green-200 bg-green-50 px-4 py-1 text-sm font-semibold text-green-700">
-                {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(topPick?.confidence)}
+                {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(topPick?.confidence)} - {topPickInterpretation.label}
               </span>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1 text-sm font-semibold text-amber-700">
                 {inputSummary?.season || '--'} • {result?.mode || '--'}
@@ -270,6 +288,7 @@ export default function Results() {
               {getCropName(topPick, isHindi)}
             </h1>
             <p className="mt-3 max-w-3xl text-[16px] leading-7 text-[#6b7280]">{topPick?.reason || '--'}</p>
+            <p className="mt-2 text-sm font-medium text-[#2f6a4f]">{topPickInterpretation.description}</p>
           </div>
 
           <div className="mt-7 grid gap-3 md:grid-cols-3">
@@ -323,6 +342,7 @@ export default function Results() {
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             {recommendations.map((item, index) => {
               const isTop = index === 0
+              const interpretation = getConfidenceInterpretation(item)
               return (
                 <article
                   key={`${item.crop}-${item.rank}`}
@@ -346,11 +366,12 @@ export default function Results() {
                         isTop ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700',
                       ].join(' ')}
                     >
-                      {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(item.confidence)}
+                      {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(item.confidence)} - {interpretation.label}
                     </span>
                   </div>
 
                   <div className="ml-2 mt-4 rounded-lg bg-[#faf8f2] p-4 text-[15px] leading-7 text-[#6b7280]">{item.reason}</div>
+                  <p className="ml-2 mt-3 text-sm font-medium text-[#2f6a4f]">{interpretation.description}</p>
 
                   <div className="ml-2 mt-4 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-lg bg-gray-50 p-4">
