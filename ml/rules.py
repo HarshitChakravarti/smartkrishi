@@ -7,138 +7,20 @@ from functools import lru_cache
 from pathlib import Path
 
 try:
-    from .config import (
-        CROP_FAMILIES_PATH,
-        HIGH_RAIN_WATERLOG_PENALTY,
-        HIGH_RAIN_WATER_BOOST,
-        HIGH_RAINFALL_THRESHOLD,
-        LARGE_FARM_STAPLE_BOOST,
-        LARGE_FARM_THRESHOLD,
-        LOW_RAIN_DROUGHT_BOOST,
-        LOW_RAIN_WATER_PENALTY,
-        LOW_RAINFALL_THRESHOLD,
-        MODERATE_RAIN_BOOST,
-        PERENNIAL_BOOST,
-        RECENT_ROTATION_PENALTY,
-        REGIONAL_BOOST,
-        ROTATION_BONUS,
-        SAME_CROP_PENALTY,
-        SAME_FAMILY_PENALTY,
-        SEASONS,
-        SEASONAL_CROPS_PATH,
-        SEASON_BOOST,
-        SMALL_FARM_HIGHVALUE_BOOST,
-        SMALL_FARM_THRESHOLD,
-        WRONG_SEASON_PENALTY,
-    )
+    from .crop_knowledge import CropKnowledgeBase
+    from .config import SEASONS
 except ImportError:  # pragma: no cover
-    from config import (  # type: ignore
-        CROP_FAMILIES_PATH,
-        HIGH_RAIN_WATERLOG_PENALTY,
-        HIGH_RAIN_WATER_BOOST,
-        HIGH_RAINFALL_THRESHOLD,
-        LARGE_FARM_STAPLE_BOOST,
-        LARGE_FARM_THRESHOLD,
-        LOW_RAIN_DROUGHT_BOOST,
-        LOW_RAIN_WATER_PENALTY,
-        LOW_RAINFALL_THRESHOLD,
-        MODERATE_RAIN_BOOST,
-        PERENNIAL_BOOST,
-        RECENT_ROTATION_PENALTY,
-        REGIONAL_BOOST,
-        ROTATION_BONUS,
-        SAME_CROP_PENALTY,
-        SAME_FAMILY_PENALTY,
-        SEASONS,
-        SEASONAL_CROPS_PATH,
-        SEASON_BOOST,
-        SMALL_FARM_HIGHVALUE_BOOST,
-        SMALL_FARM_THRESHOLD,
-        WRONG_SEASON_PENALTY,
-    )
+    from crop_knowledge import CropKnowledgeBase  # type: ignore
+    from config import SEASONS  # type: ignore
 
-WATER_INTENSIVE = {"rice", "jute", "sugarcane"}
-DROUGHT_TOLERANT = {"millet", "millets", "chickpea", "mothbeans"}
-WATERLOG_SENSITIVE = {"chickpea", "lentil"}
-MODERATE_RAIN_CROPS = {"maize", "cotton"}
-HIGH_VALUE_SMALL_FARM = {
-    "banana",
-    "mango",
-    "grapes",
-    "pomegranate",
-    "papaya",
-    "orange",
-    "coffee",
-    "watermelon",
-    "muskmelon",
-    "chilli",
-}
-STAPLE_LARGE_FARM = {"wheat", "rice", "maize"}
-COMMERCIAL_LARGE_FARM = {"cotton", "jute"}
-
-LEGUMES = {"lentil", "chickpea", "mungbean", "mothbeans", "blackgram", "pigeonpeas", "kidneybeans"}
-CEREALS = {"rice", "wheat", "maize", "millet", "millets"}
-
-REGIONAL_BOOSTS = {
-    "Punjab": ["wheat", "rice", "maize"],
-    "Haryana": ["wheat", "rice", "mustard"],
-    "Maharashtra": ["cotton", "sugarcane", "soybean", "pomegranate"],
-    "Karnataka": ["coffee", "rice", "coconut", "mango"],
-    "Kerala": ["coconut", "coffee", "rice", "banana", "rubber"],
-    "Tamil Nadu": ["rice", "banana", "coconut", "groundnut"],
-    "West Bengal": ["rice", "jute", "potato"],
-    "Rajasthan": ["millet", "chickpea", "mustard", "mothbeans"],
-    "Uttar Pradesh": ["wheat", "rice", "sugarcane", "potato"],
-    "Madhya Pradesh": ["wheat", "soybean", "chickpea", "lentil"],
-    "Gujarat": ["cotton", "groundnut", "castor", "mango"],
-    "Andhra Pradesh": ["rice", "cotton", "chilli", "mango"],
-    "Telangana": ["rice", "cotton", "maize"],
-    "Bihar": ["rice", "wheat", "maize", "lentil"],
-    "Odisha": ["rice", "groundnut", "jute"],
-}
-
-
-@lru_cache(maxsize=1)
-def _load_json(path: str) -> dict:
-    file_path = Path(path)
-    if not file_path.exists():
-        return {}
-    with file_path.open("r", encoding="utf-8") as handle:
-        return json.load(handle)
-
-
-@lru_cache(maxsize=1)
-def _seasonal_crop_map() -> dict[str, set[str]]:
-    raw = _load_json(SEASONAL_CROPS_PATH)
-    return {key: {str(crop).lower() for crop in values} for key, values in raw.items() if isinstance(values, list)}
-
-
-@lru_cache(maxsize=1)
-def _crop_family_map() -> dict[str, str]:
-    raw = _load_json(CROP_FAMILIES_PATH)
-    mapping: dict[str, str] = {}
-    for family, crops in raw.items():
-        if not isinstance(crops, list):
-            continue
-        for crop in crops:
-            mapping[str(crop).lower()] = str(family).lower()
-    return mapping
+kb = CropKnowledgeBase()
 
 
 def detect_season(month_name: str) -> str:
     month_lookup = {
-        "january": 1,
-        "february": 2,
-        "march": 3,
-        "april": 4,
-        "may": 5,
-        "june": 6,
-        "july": 7,
-        "august": 8,
-        "september": 9,
-        "october": 10,
-        "november": 11,
-        "december": 12,
+        "january": 1, "february": 2, "march": 3, "april": 4,
+        "may": 5, "june": 6, "july": 7, "august": 8,
+        "september": 9, "october": 10, "november": 11, "december": 12,
     }
     month_number = month_lookup.get(str(month_name).strip().lower())
     if month_number is None:
@@ -150,175 +32,169 @@ def detect_season(month_name: str) -> str:
     return "Kharif"
 
 
-def compute_rotation_gap_months(previous_crop_month: str, planting_month: str) -> int:
-    lookup = {
-        "january": 1,
-        "february": 2,
-        "march": 3,
-        "april": 4,
-        "may": 5,
-        "june": 6,
-        "july": 7,
-        "august": 8,
-        "september": 9,
-        "october": 10,
-        "november": 11,
-        "december": 12,
+def get_generic_advisories() -> dict:
+    return {
+        "irrigation": "Use moisture-based irrigation scheduling.",
+        "fertilizer": "Use soil-test guided NPK application.",
+        "pest_watch": "Scout fields weekly and act early.",
+        "weather_note": "Monitor weather continuously."
     }
-    prev = lookup.get(str(previous_crop_month).strip().lower())
-    plant = lookup.get(str(planting_month).strip().lower())
-    if prev is None or plant is None:
-        raise ValueError("Invalid month supplied for rotation gap calculation")
-    return (plant - prev) % 12
-
-
-def get_crop_family(crop_name: str) -> str | None:
-    return _crop_family_map().get(str(crop_name).strip().lower())
-
-
-def _adjust(candidate: dict, delta: float, reason: str) -> None:
-    candidate["score"] += delta
-    candidate["adjustments"] += delta
-    candidate["reasons"].append(reason)
-
-
-def apply_crop_rotation(candidates: list[dict], previous_crop: str | None, previous_crop_month: str | None, farming_month: str) -> list[dict]:
-    previous = str(previous_crop or "none").strip().lower()
-    if previous in {"none", "null", ""}:
-        return candidates
-
-    gap = None
-    if previous_crop_month and farming_month:
-        gap = compute_rotation_gap_months(previous_crop_month, farming_month)
-
-    previous_family = get_crop_family(previous)
-
-    for candidate in candidates:
-        crop = candidate["crop"]
-        crop_family = get_crop_family(crop)
-
-        if crop == previous:
-            _adjust(candidate, SAME_CROP_PENALTY, "Same crop as previous crop (avoid monocropping)")
-        elif previous_family and crop_family and previous_family == crop_family:
-            _adjust(candidate, SAME_FAMILY_PENALTY, "Same crop family as previous crop")
-
-        if gap is not None and gap < 3:
-            _adjust(candidate, RECENT_ROTATION_PENALTY, "Short crop rotation gap (<3 months)")
-
-        if crop in LEGUMES and previous in CEREALS:
-            _adjust(candidate, ROTATION_BONUS, "Good rotation: legume after cereal")
-
-    return candidates
-
-
-def apply_seasonal_logic(candidates: list[dict], farming_month: str) -> list[dict]:
-    detected_season = detect_season(farming_month)
-    seasonal = _seasonal_crop_map()
-
-    season_crops = seasonal.get(detected_season, set())
-    perennial = seasonal.get("Perennial", set())
-    other_season_crops = set().union(*[values for key, values in seasonal.items() if key not in {detected_season, "Perennial"}])
-
-    for candidate in candidates:
-        crop = candidate["crop"]
-        if crop in season_crops:
-            _adjust(candidate, SEASON_BOOST, f"Aligned with {detected_season} season")
-        elif crop in perennial:
-            _adjust(candidate, PERENNIAL_BOOST, "Perennial crop suited for year-round planning")
-        elif crop in other_season_crops:
-            _adjust(candidate, WRONG_SEASON_PENALTY, f"Typically not ideal in {detected_season} season")
-
-    return candidates
-
-
-def apply_rainfall_suitability(candidates: list[dict], avg_rainfall: float) -> list[dict]:
-    rainfall = float(avg_rainfall)
-    for candidate in candidates:
-        crop = candidate["crop"]
-        if rainfall < LOW_RAINFALL_THRESHOLD:
-            if crop in WATER_INTENSIVE:
-                _adjust(candidate, LOW_RAIN_WATER_PENALTY, "Insufficient rainfall for water-intensive crop")
-            if crop in DROUGHT_TOLERANT:
-                _adjust(candidate, LOW_RAIN_DROUGHT_BOOST, "Drought-tolerant crop suits low rainfall")
-        elif rainfall > HIGH_RAINFALL_THRESHOLD:
-            if crop in {"rice", "jute"}:
-                _adjust(candidate, HIGH_RAIN_WATER_BOOST, "High rainfall supports this crop")
-            if crop in WATERLOG_SENSITIVE:
-                _adjust(candidate, HIGH_RAIN_WATERLOG_PENALTY, "Waterlogging risk in high-rainfall window")
-        else:
-            if crop in MODERATE_RAIN_CROPS:
-                _adjust(candidate, MODERATE_RAIN_BOOST, "Moderate rainfall profile is suitable")
-
-    return candidates
-
-
-def apply_farm_size_logic(candidates: list[dict], land_area: float) -> list[dict]:
-    area = float(land_area)
-    for candidate in candidates:
-        crop = candidate["crop"]
-        if area < SMALL_FARM_THRESHOLD:
-            if crop in HIGH_VALUE_SMALL_FARM:
-                _adjust(candidate, SMALL_FARM_HIGHVALUE_BOOST, "High-value crop can improve small-farm returns")
-            if crop in {"wheat", "rice"}:
-                _adjust(candidate, -0.03, "Staple crop may offer lower margins on very small farms")
-        elif area > LARGE_FARM_THRESHOLD:
-            if crop in STAPLE_LARGE_FARM:
-                _adjust(candidate, LARGE_FARM_STAPLE_BOOST, "Staple crop aligns with large-scale operations")
-            if crop in COMMERCIAL_LARGE_FARM:
-                _adjust(candidate, 0.03, "Commercial crop viable at larger scale")
-
-    return candidates
-
-
-def apply_regional_suitability(candidates: list[dict], state: str) -> list[dict]:
-    state_name = str(state).strip().title()
-    preferred = {crop.lower() for crop in REGIONAL_BOOSTS.get(state_name, [])}
-    if not preferred:
-        return candidates
-
-    for candidate in candidates:
-        if candidate["crop"] in preferred:
-            _adjust(candidate, REGIONAL_BOOST, f"{state_name} has strong cultivation history for this crop")
-
-    return candidates
 
 
 def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
-    """Apply all rules and return sorted candidates with explainability fields."""
-    enriched = [
-        {
-            "crop": str(candidate["crop"]).lower(),
-            "ml_confidence": float(candidate["ml_confidence"]),
-            "score": float(candidate["ml_confidence"]),
-            "adjustments": 0.0,
-            "reasons": [],
+    """
+    Enhanced rule application using CropKnowledgeBase.
+    
+    For each candidate crop:
+    1. Get its CropProfile from knowledge base
+    2. Compute fit scores using crop-specific ranges
+    3. Build human-readable reason from specific crop data
+    4. Generate crop-specific advisories
+    """
+    enhanced_candidates = []
+    
+    for candidate in candidates:
+        crop_name = candidate["crop"]
+        crop_profile = kb.get_crop(crop_name)
+        
+        # Backward compatibility format wrapper
+        result = {
+            "crop": crop_name,
+            "ml_confidence": candidate["ml_confidence"],
+            "score": candidate["ml_confidence"], # Legacy compat
         }
-        for candidate in candidates
-    ]
-
-    farming_month = context.get("farming_month")
-    if farming_month:
-        apply_seasonal_logic(enriched, farming_month)
-
-    if str(context.get("mode", "")).lower() == "planning":
-        apply_crop_rotation(
-            enriched,
-            context.get("previous_crop"),
-            context.get("previous_crop_month"),
-            farming_month,
+        
+        if not crop_profile:
+            # Unknown crop — keep ML score, no rule adjustments
+            result["final_confidence"] = candidate["ml_confidence"]
+            result["reason"] = "General soil and climate match (Not in KB)"
+            result["rule_adjustment"] = "+0.00"
+            result["advisories"] = get_generic_advisories()
+            result["season"] = "Unknown"
+            result["growing_duration"] = "Unknown"
+            enhanced_candidates.append(result)
+            continue
+            
+        ml_score = candidate["ml_confidence"]
+        adjustments = 0.0
+        reasons = []
+        
+        # ═══ RULE 1: Season + Sowing Month Fit ═══
+        farming_month = context.get("farming_month", "")
+        detected_season = detect_season(farming_month)
+        season_score = crop_profile.get_season_fit_score(farming_month, detected_season)
+        
+        if season_score >= 0.8:
+            adjustments += 0.12
+            reasons.append(f"✅ Ideal sowing month for {crop_profile.display_name}")
+        elif season_score >= 0.3:
+            adjustments += 0.05
+            reasons.append(f"✅ {detected_season} season crop")
+        elif season_score <= -0.5:
+            adjustments -= 0.35  # HEAVY penalty — wrong season
+            reasons.append(f"❌ Not suitable for {detected_season} season (typically {crop_profile.primary_season})")
+            
+        # ═══ RULE 2: Climate Fit ═══
+        climate_score = crop_profile.get_climate_fit_score(
+            temperature=context.get("temperature", 25),
+            humidity=context.get("humidity", 60),
+            rainfall=context.get("avg_rainfall", 100)
         )
+        
+        if climate_score >= 0.8:
+            adjustments += 0.08
+            reasons.append("✅ Excellent climate match")
+        elif climate_score >= 0.5:
+            adjustments += 0.03
+            reasons.append("✅ Acceptable climate conditions")
+        elif climate_score < 0.3:
+            adjustments -= 0.15
+            reasons.append("⚠️ Climate conditions not ideal for this crop")
+            
+        # ═══ RULE 3: Soil Fit ═══
+        soil_score = crop_profile.get_soil_fit_score(
+            N=context.get("N", 50),
+            P=context.get("P", 50),
+            K=context.get("K", 50),
+            pH=context.get("pH", 6.5)
+        )
+        
+        if soil_score >= 0.8:
+            adjustments += 0.06
+            reasons.append("✅ Soil nutrients well-suited")
+        elif soil_score < 0.4:
+            adjustments -= 0.10
+            reasons.append("⚠️ Soil nutrients may need adjustment")
+            
+        # ═══ RULE 4: Crop Rotation ═══
+        if str(context.get("mode", "")).lower() == "planning":
+            previous_crop = context.get("previous_crop", "")
+            rotation_score = crop_profile.get_rotation_score(previous_crop)
+            rotation_reason = crop_profile.get_rotation_reason(previous_crop)
+            
+            adjustments += rotation_score
+            if rotation_reason:
+                reasons.append(rotation_reason)
+                
+        # ═══ RULE 5: Regional Suitability ═══
+        state = context.get("state", "")
+        regional_score = crop_profile.get_regional_score(state)
+        
+        if regional_score > 0:
+            adjustments += regional_score
+            reasons.append(f"✅ {state} is known for {crop_profile.display_name} cultivation")
+        elif regional_score < 0:
+            adjustments += regional_score
+            reasons.append(f"⚠️ {crop_profile.display_name} is not commonly grown in {state}")
+            
+        # ═══ RULE 6: Farm Size ═══
+        farm_size = context.get("land_area", 3)
+        size_fit = crop_profile.get_farm_size_fit(farm_size)
+        
+        if size_fit >= 0.8:
+            adjustments += 0.03
+        elif size_fit < 0.4:
+            adjustments -= 0.05
+            reasons.append(f"⚠️ Farm size ({farm_size} acres) may be limiting")
+            
+        # ═══ RULE 7: Water Suitability ═══
+        water_score = crop_profile.get_water_suitability(context.get("avg_rainfall", 100))
+        
+        if water_score < 0.3:
+            adjustments -= 0.12
+            water_cat = crop_profile.water_need_category
+            reasons.append(f"❌ {water_cat} water needs but insufficient rainfall")
+            
+        # ═══ COMPUTE FINAL SCORE ═══
+        final_confidence = max(0.01, min(0.99, ml_score + adjustments))
+        
+        if not reasons:
+            reasons.append("General agronomic suitability")
+        reason_string = " + ".join([r.lstrip("✅❌⚠️ ") for r in reasons if "✅" in r])
+        if not reason_string:
+            reason_string = reasons[0] if reasons else "General match"
+            
+        advisories = crop_profile.get_advisories(context)
+        
+        result.update({
+            "display_name": crop_profile.display_name,
+            "hindi_name": crop_profile.hindi_name,
+            "final_confidence": final_confidence,
+            "rule_adjustment": f"{adjustments:+.2f}",
+            "season": detected_season,
+            "growing_duration": f"{crop_profile.growing_months} months",
+            "sowing_months": crop_profile.sowing_months,
+            "reason": reason_string,
+            "detailed_reasons": reasons,
+            "advisories": advisories,
+            "farming_plan": crop_profile.get_farming_plan(),
+            "full_fertilizer_plan": crop_profile.get_full_fertilizer_plan(),
+            "full_irrigation_plan": crop_profile.get_full_irrigation_plan(),
+            "tags": crop_profile.tags,
+            "category": crop_profile.category,
+            "water_needs": crop_profile.water_need_category
+        })
+        enhanced_candidates.append(result)
 
-    apply_rainfall_suitability(enriched, float(context.get("avg_rainfall", 0.0)))
-    apply_farm_size_logic(enriched, float(context.get("land_area", 0.0)))
-    apply_regional_suitability(enriched, str(context.get("state", "")))
-
-    for candidate in enriched:
-        candidate["final_confidence"] = max(0.01, min(0.99, candidate["score"]))
-        candidate["rule_adjustment"] = f"{candidate['adjustments']:+.2f}"
-        if candidate["reasons"]:
-            candidate["reason"] = " + ".join(candidate["reasons"])
-        else:
-            candidate["reason"] = "General soil and climate match"
-
-    enriched.sort(key=lambda row: row["final_confidence"], reverse=True)
-    return enriched
+    enhanced_candidates.sort(key=lambda x: x["final_confidence"], reverse=True)
+    return enhanced_candidates

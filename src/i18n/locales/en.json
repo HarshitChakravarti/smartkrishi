@@ -2,7 +2,6 @@
   "title": "SmartKrishi",
   "back": "Back",
   "layout.platform": "AI Farming Platform",
-
   "common.back": "Back",
   "common.home": "Home",
   "common.next": "Next",
@@ -10,13 +9,11 @@
   "common.open": "Open",
   "common.checkNow": "Check Now",
   "common.retry": "Retry",
-
   "navbar.subtitle": "AI-based Crop Advisory Platform",
   "navbar.toggleMenu": "Toggle navigation menu",
   "navbar.english": "English",
   "navbar.hindi": "हिंदी",
   "navbar.startPlanning": "Start Planning",
-
   "landing.locationFallback": "Maharashtra, India",
   "landing.liveCard.title": "📍 Live Farm Conditions",
   "landing.liveCard.temperature": "Temperature",
@@ -78,7 +75,6 @@
   "landing.footer.madeWith": "Made with ❤️ for Indian farmers",
   "landing.footer.note": "This platform provides AI-based advisory suggestions. Always consult local agricultural experts for final decisions.",
   "landing.helpButton": "🌾 Need Help?",
-
   "predictForm.submitLogPrefix": "SmartKrishi recommendation input:",
   "predictForm.header.title": "Crop Recommendation",
   "predictForm.header.subtitle": "Get personalized recommendations based on your farm conditions",
@@ -127,7 +123,6 @@
   "predictForm.navigation.continue": "Continue",
   "predictForm.navigation.getRecommendations": "Get Recommendations",
   "predictForm.navigation.backHome": "Back to Home",
-
   "home.greetingLabel": "Field Dashboard",
   "home.greeting": "Namaste, Farmer 👋",
   "home.subtitle": "Plan your next crop cycle with AI guidance built from weather, soil inputs, and field context.",
@@ -137,12 +132,10 @@
   "home.trust.basedOn": "Based on weather + soil data",
   "home.trust.support": "Advisory support",
   "home.trust.disclaimer": "Advisory support only. SmartKrishi gives planning guidance, not guaranteed yield or market outcome.",
-
   "home.snapshot.recommendation": "Latest recommendation",
   "home.snapshot.pending": "Assessment needed",
   "home.snapshot.pendingCaption": "Complete one crop assessment to unlock advisory history.",
   "home.snapshot.fieldReadiness": "Soil readiness",
-
   "home.weather": "Weather",
   "home.weather.title": "Weather snapshot",
   "home.weather.localLabel": "Local weather",
@@ -156,7 +149,6 @@
   "home.weather.humidityHint": "Leaf wetness watch",
   "home.weather.rain": "Rainfall",
   "home.weather.rainHint": "Short-term rainfall",
-
   "home.soil.title": "Soil health summary",
   "home.soil.missingTitle": "No soil profile yet",
   "home.soil.missing": "Start one crop assessment to build your soil summary card.",
@@ -170,7 +162,6 @@
   "home.soil.phWatch": "pH needs adjustment",
   "home.soil.npkReady": "NPK profile is workable",
   "home.soil.npkWatch": "NPK profile needs improvement",
-
   "home.alerts.title": "Field alerts",
   "home.alerts.noneTitle": "No active alert",
   "home.alerts.noneBody": "SmartKrishi will surface weather and pest alerts once live signals are available.",
@@ -180,7 +171,6 @@
   "home.alerts.humidityBody": "Humidity is high. Scout leaves every 2-3 days for fungal patches and early pest signs.",
   "home.alerts.clearTitle": "Stable conditions",
   "home.alerts.clearBody": "Conditions look stable. Follow planned irrigation and keep field scouting routine active.",
-
   "home.tips.title": "Tips of the day",
   "home.tips.subtitle": "Localized farming advice",
   "home.tips.kharif1": "Check bunds and drainage before the next rain spell to avoid standing water in kharif crops.",
@@ -190,7 +180,6 @@
   "home.tips.default1": "Keep a short written log of rainfall, spray dates, and fertilizer timing for each field.",
   "home.tips.default2": "Scout one edge and one center patch of the field before any blanket spray decision.",
   "home.tips.common": "Advisory works best when soil values are updated before each sowing cycle.",
-
   "home.features.eyebrow": "Core tools",
   "home.features.title": "Start from the task you need",
   "home.features.description": "Every feature card is built around a real farmer workflow, not a demo shortcut.",
@@ -207,14 +196,12 @@
   "home.feature.disease.description": "Upload a leaf photo to review likely disease signs and treatment steps.",
   "home.feature.disease.status": "Beta",
   "home.feature.disease.meta": "Photo-based scan",
-
   "home.recent.eyebrow": "History",
   "home.recent.title": "Recent recommendations",
   "home.recent.description": "Your recent AI crop suggestions stay visible on the dashboard.",
   "home.recent.savedAt": "Saved on {{date}}",
   "home.recent.emptyTitle": "No saved recommendations yet",
   "home.recent.emptyBody": "Run your first crop recommendation to build a field history for this dashboard.",
-
   "predict.title": "Crop planning",
   "predict.subtitle": "Capture the most important field details in four quick steps.",
   "predict.assistantLabel": "Guided input flow",
@@ -262,7 +249,6 @@
   "predict.review.finalCheck": "Final weather check",
   "predict.review.weatherCard": "Weather sync",
   "predict.submit": "Get recommendation",
-
   "results.title": "Field recommendation",
   "results.subtitle": "Ranked crop suggestions with actionable farm advisories.",
   "results.loading": "Preparing recommendation...",
@@ -287,7 +273,6 @@
   "results.advisoryDescription": "Open each section for irrigation, fertilizer, pest control, and weather watch actions.",
   "results.actions.reviewInputs": "Review inputs",
   "results.actions.newSuggestion": "Start new plan",
-
   "results.reason.rainHigh": "High rainfall support",
   "results.reason.rainModerate": "Moderate rain conditions",
   "results.reason.rainLight": "Low rain means controlled irrigation",
@@ -297,7 +282,6 @@
   "results.reason.humiditySupport": "Humidity supports early crop establishment",
   "results.reason.smallFarmFit": "Suitable for smaller farm planning",
   "results.reason.largeFarmFit": "Suitable for larger field operations",
-
   "results.sections.irrigation.title": "Irrigation",
   "results.sections.irrigation.summary": "Water timing and field moisture actions",
   "results.sections.fertilizer.title": "Fertilizer",
@@ -306,7 +290,6 @@
   "results.sections.pest.summary": "Scouting and prevention checklist",
   "results.sections.weather.title": "Weather watch",
   "results.sections.weather.summary": "Short-term weather preparation steps",
-
   "results.advice.irrigation.heavy.1": "Delay fresh irrigation until topsoil dries and drainage channels are clear.",
   "results.advice.irrigation.heavy.2": "Inspect low-lying patches for standing water before any fertilizer application.",
   "results.advice.irrigation.heavy.3": "Resume light irrigation only after root zone moisture starts dropping.",
@@ -316,28 +299,24 @@
   "results.advice.irrigation.normal.1": "Use planned irrigation intervals and avoid flood watering where possible.",
   "results.advice.irrigation.normal.2": "Check soil moisture in one edge and one center patch before the next cycle.",
   "results.advice.irrigation.normal.3": "Keep irrigation timing consistent during early crop establishment.",
-
   "results.advice.fertilizer.phLow": "Apply lime or dolomite gradually to move acidic soil closer to the workable pH band.",
   "results.advice.fertilizer.phHigh": "Use organic matter or sulfur-based correction carefully to reduce alkalinity over time.",
   "results.advice.fertilizer.cereal": "Split nitrogen into 2-3 doses instead of one heavy application for cereal crops.",
   "results.advice.fertilizer.cash": "Balance nitrogen with potash support to maintain crop strength during branching and boll formation.",
   "results.advice.fertilizer.general": "Use a balanced NPK plan and avoid over-correcting any single nutrient.",
   "results.advice.fertilizer.organic": "Add compost or well-decomposed FYM to improve nutrient holding and soil structure.",
-
   "results.advice.pest.humid.1": "Scout leaves every 2-3 days for fungal spots, blight, and sucking pest activity.",
   "results.advice.pest.humid.2": "Remove visibly infected leaves early and keep tool hygiene strict.",
   "results.advice.pest.humid.3": "Use targeted spray only after field scouting confirms risk.",
   "results.advice.pest.normal.1": "Walk the field weekly and check both leaf surfaces for early pest signs.",
   "results.advice.pest.normal.2": "Remove heavily infested leaves and track affected patches instead of blanket spraying first.",
   "results.advice.pest.normal.3": "Keep weed growth controlled around the crop edge to reduce pest shelter.",
-
   "results.advice.weather.heavy.1": "Prepare drainage before the next rain pulse and keep fertilizer bags protected.",
   "results.advice.weather.heavy.2": "Avoid spraying just before expected rainfall to reduce chemical wash-off.",
   "results.advice.weather.heavy.3": "Inspect field bunds and entry points for runoff damage after rain.",
   "results.advice.weather.normal.1": "Conditions look stable. Follow planned irrigation and scouting intervals.",
   "results.advice.weather.normal.2": "Keep one weather check in the morning before any nutrient or spray decision.",
   "results.advice.weather.normal.3": "Update soil and weather inputs again if field conditions change sharply.",
-
   "disease.title": "Disease check",
   "disease.subtitle": "Check by leaf photo",
   "disease.camera": "Camera",
@@ -364,5 +343,41 @@
   "disease.case.brownSpot.t4": "Use resistant varieties next season",
   "disease.case.healthy": "Healthy Leaf",
   "disease.case.healthy.t1": "No treatment needed",
-  "disease.case.healthy.t2": "Continue regular monitoring"
+  "disease.case.healthy.t2": "Continue regular monitoring",
+  "new_results.analyzing": "Analyzing your farm conditions...",
+  "new_results.loadingSteps": "Evaluating crops • Checking season • Analyzing soil • Computing",
+  "new_results.noRecommendationsTitle": "Unable to generate recommendations",
+  "new_results.noSuitableTitle": "No suitable crops found",
+  "new_results.noSuitableBody": "No suitable crops found for your current inputs. Try adjusting soil parameters or selecting a different season.",
+  "new_results.modifyInputs": "Modify Inputs",
+  "new_results.tryAgain": "Try Again",
+  "new_results.backToHome": "Back to Home",
+  "new_results.recommendationReady": "Recommendation Ready",
+  "new_results.aiConfidence": "AI Confidence",
+  "new_results.topCrop": "Top Crop",
+  "new_results.growingTime": "Growing Time",
+  "new_results.seasonText": "season",
+  "new_results.mlConfidence": "ML Confidence",
+  "new_results.ruleAdj": "Rule adj",
+  "new_results.farmSize": "Farm",
+  "new_results.climate": "Climate",
+  "new_results.rainfall": "Rainfall",
+  "new_results.source": "Source",
+  "new_results.topCropChoices": "Top {{count}} Crop Choices",
+  "new_results.rank": "Rank {{count}}",
+  "new_results.mlScore": "ML Score",
+  "new_results.rule": "Rule",
+  "new_results.actionPlan": "Action Plan",
+  "new_results.cropAdvisories": "Crop Advisories",
+  "new_results.advisoryHint": "Open each section for irrigation, fertilizer, pest control, and weather guidance.",
+  "new_results.advisoryTitle": "{{crop}} Advisory",
+  "new_results.analyzedInfo": "Analyzed {{crops}} crops • Processing time: {{time}}ms • Model {{version}}",
+  "new_results.rulesApplied": "Rules applied: {{rules}}",
+  "new_results.reviewInputs": "Review Inputs",
+  "new_results.startNewPlan": "Start New Plan",
+  "new_results.advisoryRows.irrigation": "Irrigation",
+  "new_results.advisoryRows.fertilizer": "Fertilizer",
+  "new_results.advisoryRows.pest_watch": "Pest Watch",
+  "new_results.advisoryRows.weather_note": "Weather Note",
+  "new_results.fallback.disclaimer": "AI-based advisory. Please consult local agricultural experts for final decisions."
 }

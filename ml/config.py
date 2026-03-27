@@ -21,6 +21,7 @@ HUMIDITY_DATA_PATH = os.path.join(CLIMATE_DIR, "humidity_by_state_month.json")
 CROP_DURATION_PATH = os.path.join(DATA_DIR, "crop_duration.json")
 CROP_FAMILIES_PATH = os.path.join(DATA_DIR, "crop_families.json")
 SEASONAL_CROPS_PATH = os.path.join(DATA_DIR, "seasonal_crops.json")
+CROP_KB_PATH = os.path.join(DATA_DIR, "crop_knowledge_base.json")
 
 FEATURE_COLUMNS = ["N", "P", "K", "pH", "temperature", "humidity", "rainfall"]
 

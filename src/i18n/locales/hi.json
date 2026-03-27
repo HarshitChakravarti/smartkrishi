@@ -2,7 +2,6 @@
   "title": "स्मार्टकृषि",
   "back": "वापस",
   "layout.platform": "एआई खेती प्लेटफॉर्म",
-
   "common.back": "वापस",
   "common.home": "होम",
   "common.next": "आगे",
@@ -10,13 +9,11 @@
   "common.open": "खोलें",
   "common.checkNow": "अभी जांचें",
   "common.retry": "फिर कोशिश करें",
-
   "navbar.subtitle": "एआई आधारित फसल सलाह प्लेटफॉर्म",
   "navbar.toggleMenu": "नेविगेशन मेनू खोलें",
   "navbar.english": "English",
   "navbar.hindi": "हिंदी",
   "navbar.startPlanning": "योजना शुरू करें",
-
   "landing.locationFallback": "महाराष्ट्र, भारत",
   "landing.liveCard.title": "📍 लाइव खेत स्थिति",
   "landing.liveCard.temperature": "तापमान",
@@ -78,7 +75,6 @@
   "landing.footer.madeWith": "भारतीय किसानों के लिए ❤️ के साथ",
   "landing.footer.note": "यह प्लेटफॉर्म एआई आधारित सलाह देता है। अंतिम निर्णय के लिए स्थानीय कृषि विशेषज्ञों से सलाह अवश्य लें।",
   "landing.helpButton": "🌾 मदद चाहिए?",
-
   "predictForm.submitLogPrefix": "SmartKrishi इनपुट:",
   "predictForm.header.title": "फसल सिफारिश",
   "predictForm.header.subtitle": "अपने खेत की स्थितियों के आधार पर व्यक्तिगत सिफारिशें प्राप्त करें",
@@ -127,7 +123,6 @@
   "predictForm.navigation.continue": "जारी रखें",
   "predictForm.navigation.getRecommendations": "सिफारिशें प्राप्त करें",
   "predictForm.navigation.backHome": "होम पर वापस जाएं",
-
   "home.greetingLabel": "फील्ड डैशबोर्ड",
   "home.greeting": "नमस्ते, किसान 👋",
   "home.subtitle": "मौसम, मिट्टी और खेत की स्थिति के आधार पर अगली फसल की योजना भरोसे के साथ बनाइए।",
@@ -137,12 +132,10 @@
   "home.trust.basedOn": "मौसम + मिट्टी डेटा पर आधारित",
   "home.trust.support": "सलाहकारी सहायता",
   "home.trust.disclaimer": "यह सलाह सहायता के लिए है। स्मार्टकृषि उपज या बाजार परिणाम की गारंटी नहीं देता।",
-
   "home.snapshot.recommendation": "पिछली सिफारिश",
   "home.snapshot.pending": "आकलन बाकी है",
   "home.snapshot.pendingCaption": "एक बार फसल आकलन पूरा करें, तब सलाह इतिहास दिखेगा।",
   "home.snapshot.fieldReadiness": "मिट्टी की तैयारी",
-
   "home.weather": "मौसम",
   "home.weather.title": "मौसम स्थिति",
   "home.weather.localLabel": "स्थानीय मौसम",
@@ -156,7 +149,6 @@
   "home.weather.humidityHint": "पत्तों की नमी पर नजर",
   "home.weather.rain": "बारिश",
   "home.weather.rainHint": "कम समय की बारिश",
-
   "home.soil.title": "मिट्टी स्वास्थ्य सारांश",
   "home.soil.missingTitle": "अभी मिट्टी प्रोफाइल नहीं है",
   "home.soil.missing": "एक बार फसल आकलन शुरू करें, तब मिट्टी सारांश कार्ड बनेगा।",
@@ -170,7 +162,6 @@
   "home.soil.phWatch": "pH सुधार की जरूरत है",
   "home.soil.npkReady": "NPK प्रोफाइल कामचलाऊ है",
   "home.soil.npkWatch": "NPK प्रोफाइल बेहतर करनी होगी",
-
   "home.alerts.title": "खेत अलर्ट",
   "home.alerts.noneTitle": "अभी कोई सक्रिय अलर्ट नहीं",
   "home.alerts.noneBody": "जैसे ही मौसम या कीट का संकेत मिलेगा, स्मार्टकृषि यहां अलर्ट दिखाएगा।",
@@ -180,7 +171,6 @@
   "home.alerts.humidityBody": "नमी ज्यादा है। हर 2-3 दिन में पत्तों पर फफूंद और कीट के शुरुआती लक्षण देखें।",
   "home.alerts.clearTitle": "स्थिति सामान्य है",
   "home.alerts.clearBody": "स्थिति स्थिर है। तय सिंचाई और नियमित खेत निगरानी जारी रखें।",
-
   "home.tips.title": "आज की सलाह",
   "home.tips.subtitle": "स्थानीय खेती सुझाव",
   "home.tips.kharif1": "अगली बारिश से पहले मेड़ और निकासी की जांच करें ताकि खेत में पानी न ठहरे।",
@@ -190,7 +180,6 @@
   "home.tips.default1": "हर खेत के लिए बारिश, छिड़काव और खाद की तारीख का छोटा रिकॉर्ड रखें।",
   "home.tips.default2": "किसी भी स्प्रे से पहले खेत के किनारे और बीच के हिस्से को जरूर देखें।",
   "home.tips.common": "मिट्टी के नए टेस्ट आते ही इनपुट अपडेट करें, तभी सलाह ज्यादा सही मिलेगी।",
-
   "home.features.eyebrow": "मुख्य टूल",
   "home.features.title": "जिस काम की जरूरत है, वहीं से शुरू करें",
   "home.features.description": "हर कार्ड किसान के असली कामकाज के हिसाब से बनाया गया है, डेमो शॉर्टकट की तरह नहीं।",
@@ -207,14 +196,12 @@
   "home.feature.disease.description": "पत्ती की फोटो अपलोड करके संभावित रोग और उपचार के कदम देखें।",
   "home.feature.disease.status": "बीटा",
   "home.feature.disease.meta": "फोटो आधारित स्कैन",
-
   "home.recent.eyebrow": "इतिहास",
   "home.recent.title": "हाल की सिफारिशें",
   "home.recent.description": "ताजा एआई फसल सुझाव डैशबोर्ड पर यहीं दिखते रहेंगे।",
   "home.recent.savedAt": "{{date}} को सहेजा गया",
   "home.recent.emptyTitle": "अभी कोई सहेजी गई सिफारिश नहीं है",
   "home.recent.emptyBody": "पहली फसल सिफारिश चलाइए, फिर इस डैशबोर्ड पर खेत का इतिहास दिखेगा।",
-
   "predict.title": "फसल योजना",
   "predict.subtitle": "चार छोटे कदमों में जरूरी खेत जानकारी भरें।",
   "predict.assistantLabel": "गाइडेड इनपुट फ्लो",
@@ -262,7 +249,6 @@
   "predict.review.finalCheck": "अंतिम मौसम जांच",
   "predict.review.weatherCard": "मौसम सिंक",
   "predict.submit": "सिफारिश देखें",
-
   "results.title": "खेत सिफारिश",
   "results.subtitle": "रैंक्ड फसल सुझाव और काम की सलाह।",
   "results.loading": "सिफारिश तैयार हो रही है...",
@@ -287,7 +273,6 @@
   "results.advisoryDescription": "सिंचाई, खाद, कीट नियंत्रण और मौसम तैयारी के सेक्शन खोलकर देखें।",
   "results.actions.reviewInputs": "इनपुट फिर देखें",
   "results.actions.newSuggestion": "नई योजना शुरू करें",
-
   "results.reason.rainHigh": "अच्छी बारिश सहायता",
   "results.reason.rainModerate": "मध्यम बारिश की स्थिति",
   "results.reason.rainLight": "कम बारिश में सिंचाई नियंत्रण आसान",
@@ -297,7 +282,6 @@
   "results.reason.humiditySupport": "नमी शुरुआती बढ़वार को सहारा देती है",
   "results.reason.smallFarmFit": "छोटे खेत के लिए उपयुक्त",
   "results.reason.largeFarmFit": "बड़े खेत संचालन के लिए उपयुक्त",
-
   "results.sections.irrigation.title": "सिंचाई",
   "results.sections.irrigation.summary": "पानी देने का समय और नमी प्रबंधन",
   "results.sections.fertilizer.title": "खाद",
@@ -306,7 +290,6 @@
   "results.sections.pest.summary": "निगरानी और बचाव चेकलिस्ट",
   "results.sections.weather.title": "मौसम निगरानी",
   "results.sections.weather.summary": "कम समय की मौसम तैयारी",
-
   "results.advice.irrigation.heavy.1": "ऊपरी मिट्टी सूखने और निकासी साफ होने तक नई सिंचाई रोकें।",
   "results.advice.irrigation.heavy.2": "खाद डालने से पहले नीचे वाले हिस्सों में पानी ठहराव जरूर देखें।",
   "results.advice.irrigation.heavy.3": "जड़ क्षेत्र की नमी घटने लगे तभी हल्की सिंचाई फिर शुरू करें।",
@@ -316,28 +299,24 @@
   "results.advice.irrigation.normal.1": "तय अंतराल पर सिंचाई करें और जहां संभव हो वहां बाढ़ सिंचाई से बचें।",
   "results.advice.irrigation.normal.2": "अगली सिंचाई से पहले खेत के किनारे और बीच की मिट्टी नमी देख लें।",
   "results.advice.irrigation.normal.3": "शुरुआती बढ़वार के दौरान सिंचाई समय एक जैसा रखें।",
-
   "results.advice.fertilizer.phLow": "अम्लीय मिट्टी को सही दायरे में लाने के लिए चुना या डोलोमाइट धीरे-धीरे दें।",
   "results.advice.fertilizer.phHigh": "क्षारीयता कम करने के लिए जैविक पदार्थ या सल्फर आधारित सुधार सावधानी से करें।",
   "results.advice.fertilizer.cereal": "अनाज फसलों में नाइट्रोजन एक बार में देने के बजाय 2-3 हिस्सों में दें।",
   "results.advice.fertilizer.cash": "शाखा और बॉल बनने के समय संतुलित नाइट्रोजन और पोटाश बनाए रखें।",
   "results.advice.fertilizer.general": "संतुलित NPK योजना रखें और किसी एक पोषक तत्व को जरूरत से ज्यादा न बढ़ाएं।",
   "results.advice.fertilizer.organic": "कम्पोस्ट या अच्छी सड़ी हुई गोबर खाद से मिट्टी की पकड़ और बनावट सुधारें।",
-
   "results.advice.pest.humid.1": "हर 2-3 दिन में पत्तों पर फफूंद, झुलसा और चूसक कीट के लक्षण देखें।",
   "results.advice.pest.humid.2": "संक्रमित पत्तों को जल्दी हटाएं और औजार साफ रखें।",
   "results.advice.pest.humid.3": "स्प्रे तभी करें जब खेत निगरानी से जोखिम की पुष्टि हो जाए।",
   "results.advice.pest.normal.1": "हर हफ्ते खेत में चलकर पत्तियों के ऊपर और नीचे की तरफ जांच करें।",
   "results.advice.pest.normal.2": "पहले प्रभावित हिस्सों को अलग करें, तुरंत पूरे खेत में स्प्रे न करें।",
   "results.advice.pest.normal.3": "खेत की मेड़ों और किनारों पर खरपतवार नियंत्रित रखें।",
-
   "results.advice.weather.heavy.1": "अगली बारिश से पहले निकासी तैयार रखें और खाद/रसायन सुरक्षित रखें।",
   "results.advice.weather.heavy.2": "बारिश से ठीक पहले स्प्रे करने से बचें, वरना असर धुल सकता है।",
   "results.advice.weather.heavy.3": "बारिश के बाद मेड़ और पानी बहाव वाले हिस्सों की जांच करें।",
   "results.advice.weather.normal.1": "स्थिति सामान्य है। तय सिंचाई और निगरानी क्रम जारी रखें।",
   "results.advice.weather.normal.2": "खाद या स्प्रे से पहले सुबह एक बार मौसम जरूर देखें।",
   "results.advice.weather.normal.3": "यदि खेत की स्थिति अचानक बदले तो मौसम और मिट्टी इनपुट फिर अपडेट करें।",
-
   "disease.title": "रोग जांच",
   "disease.subtitle": "फोटो से जांच",
   "disease.camera": "कैमरा",
@@ -364,5 +343,41 @@
   "disease.case.brownSpot.t4": "अगले सीजन में प्रतिरोधी किस्म चुनें",
   "disease.case.healthy": "स्वस्थ पत्ता",
   "disease.case.healthy.t1": "इलाज की जरूरत नहीं",
-  "disease.case.healthy.t2": "नियमित निगरानी जारी रखें"
+  "disease.case.healthy.t2": "नियमित निगरानी जारी रखें",
+  "new_results.analyzing": "आपके खेत की स्थिति का विश्लेषण हो रहा है...",
+  "new_results.loadingSteps": "फसलों का मूल्यांकन • मौसम की जांच • मिट्टी विश्लेषण • गणना",
+  "new_results.noRecommendationsTitle": "सिफारिशें उत्पन्न करने में असमर्थ",
+  "new_results.noSuitableTitle": "कोई उपयुक्त फसल नहीं मिली",
+  "new_results.noSuitableBody": "आपके वर्तमान इनपुट के लिए कोई उपयुक्त फसल नहीं मिली। मिट्टी के मापदंडों को बदलने या एक अलग मौसम चुनने का प्रयास करें।",
+  "new_results.modifyInputs": "इनपुट बदलें",
+  "new_results.tryAgain": "फिर से प्रयास करें",
+  "new_results.backToHome": "होम पर वापस जाएं",
+  "new_results.recommendationReady": "सिफारिश तैयार है",
+  "new_results.aiConfidence": "एआई पर विश्वास",
+  "new_results.topCrop": "शीर्ष फसल",
+  "new_results.growingTime": "बढ़ने का समय",
+  "new_results.seasonText": "मौसम",
+  "new_results.mlConfidence": "ML विश्वास",
+  "new_results.ruleAdj": "नियम समायोजन",
+  "new_results.farmSize": "खेत (एकड़)",
+  "new_results.climate": "जलवायु",
+  "new_results.rainfall": "वर्षा",
+  "new_results.source": "स्रोत",
+  "new_results.topCropChoices": "शीर्ष {{count}} फसल विकल्प",
+  "new_results.rank": "रैंक {{count}}",
+  "new_results.mlScore": "ML स्कोर",
+  "new_results.rule": "नियम",
+  "new_results.actionPlan": "कार्य योजना",
+  "new_results.cropAdvisories": "फसल सलाह",
+  "new_results.advisoryHint": "सिंचाई, खाद, कीट नियंत्रण और मौसम मार्गदर्शन के लिए प्रत्येक अनुभाग खोलें।",
+  "new_results.advisoryTitle": "{{crop}} सलाह",
+  "new_results.analyzedInfo": "{{crops}} फसलों का विश्लेषण किया गया • प्रसंस्करण समय: {{time}}ms • मॉडल {{version}}",
+  "new_results.rulesApplied": "लागू नियम: {{rules}}",
+  "new_results.reviewInputs": "इनपुट की जाँच करें",
+  "new_results.startNewPlan": "नया प्लान शुरू करें",
+  "new_results.advisoryRows.irrigation": "सिंचाई",
+  "new_results.advisoryRows.fertilizer": "उर्वरक/खाद",
+  "new_results.advisoryRows.pest_watch": "कीट नियंत्रण",
+  "new_results.advisoryRows.weather_note": "मौसम सलाह",
+  "new_results.fallback.disclaimer": "AI आधारित सलाह। कृपया अंतिम निर्णय के लिए स्थानीय कृषि विशेषज्ञों से परामर्श लें।"
 }

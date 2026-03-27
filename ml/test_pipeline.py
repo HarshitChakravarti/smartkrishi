@@ -19,7 +19,7 @@ def test_current_payload_shape():
     }
     result = get_recommendations(payload)
     assert result["success"] is True
-    assert len(result["recommendations"]) == 2
+    assert len(result["recommendations"]) == 3
     assert result["climate_used"]["source"] == "live_weather"
 
 
@@ -42,7 +42,7 @@ def test_planning_payload_shape():
     }
     result = get_recommendations(payload)
     assert result["success"] is True
-    assert len(result["recommendations"]) == 2
+    assert len(result["recommendations"]) == 3
     assert result["climate_used"]["source"] == "historical_average"
     assert result["climate_used"]["months_covered"]
 
@@ -66,5 +66,5 @@ def test_edge_small_farm_zaid():
     }
     result = get_recommendations(payload)
     assert result["success"] is True
-    assert len(result["recommendations"]) == 2
+    assert len(result["recommendations"]) == 3
     assert result["recommendations"][0]["reason"]
