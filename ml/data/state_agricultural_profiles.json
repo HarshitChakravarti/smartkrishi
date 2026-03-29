@@ -1,0 +1,68 @@
+{
+  "Madhya Pradesh": {
+    "crop_calendar": {
+      "Kharif": {
+        "primary_crop": "soybean",
+        "major_crops": [
+          "soybean",
+          "rice",
+          "maize",
+          "cotton",
+          "pigeonpeas",
+          "mungbean"
+        ]
+      }
+    }
+  },
+  "Rajasthan": {
+    "crop_calendar": {
+      "Kharif": {
+        "primary_crop": "millet",
+        "major_crops": [
+          "millet",
+          "mungbean",
+          "mothbeans",
+          "maize",
+          "cotton"
+        ]
+      }
+    }
+  },
+  "Maharashtra": {
+    "crop_calendar": {
+      "Kharif": {
+        "major_crops": [
+          "soybean",
+          "rice",
+          "cotton",
+          "maize",
+          "pigeonpeas"
+        ]
+      }
+    }
+  },
+  "Haryana": {
+    "notes": [
+      "Millet is especially relevant for southern Haryana districts."
+    ],
+    "crop_calendar": {
+      "Kharif": {
+        "major_crops": [
+          "millet",
+          "rice",
+          "maize",
+          "cotton"
+        ]
+      }
+    }
+  },
+  "Uttar Pradesh": {
+    "crop_calendar": {
+      "Kharif": {
+        "moderate_crops": [
+          "millet"
+        ]
+      }
+    }
+  }
+}

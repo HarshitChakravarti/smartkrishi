@@ -26,7 +26,15 @@ const DISTRICT_COORDINATES = {
     Aurangabad: { lat: 19.8762, lon: 75.3433 },
     Kolhapur: { lat: 16.705, lon: 74.2433 },
   },
+  'Madhya Pradesh': {
+    Indore: { lat: 22.7196, lon: 75.8577 },
+    Ujjain: { lat: 23.1765, lon: 75.7885 },
+    Bhopal: { lat: 23.2599, lon: 77.4126 },
+    Jabalpur: { lat: 23.1815, lon: 79.9864 },
+    Gwalior: { lat: 26.2183, lon: 78.1828 },
+  },
   Karnataka: {
+    'Bengaluru Rural': { lat: 13.2257, lon: 77.575 },
     Mysuru: { lat: 12.2958, lon: 76.6394 },
     Belagavi: { lat: 15.8497, lon: 74.4977 },
     Dharwad: { lat: 15.4589, lon: 75.0078 },
@@ -37,6 +45,14 @@ const DISTRICT_COORDINATES = {
     Surat: { lat: 21.1702, lon: 72.8311 },
     Rajkot: { lat: 22.3039, lon: 70.8022 },
     Vadodara: { lat: 22.3072, lon: 73.1812 },
+    Bhavnagar: { lat: 21.7645, lon: 72.1519 },
+  },
+  Rajasthan: {
+    Jaipur: { lat: 26.9124, lon: 75.7873 },
+    Jodhpur: { lat: 26.2389, lon: 73.0243 },
+    Udaipur: { lat: 24.5854, lon: 73.7125 },
+    Kota: { lat: 25.2138, lon: 75.8648 },
+    Bikaner: { lat: 28.0229, lon: 73.3119 },
   },
   Punjab: {
     Ludhiana: { lat: 30.901, lon: 75.8573 },
@@ -45,6 +61,13 @@ const DISTRICT_COORDINATES = {
     Bathinda: { lat: 30.211, lon: 74.9455 },
     Jalandhar: { lat: 31.326, lon: 75.5762 },
   },
+  Haryana: {
+    Hisar: { lat: 29.1492, lon: 75.7217 },
+    Karnal: { lat: 29.6857, lon: 76.9905 },
+    Rohtak: { lat: 28.8955, lon: 76.6066 },
+    Sirsa: { lat: 29.5349, lon: 75.0289 },
+    Bhiwani: { lat: 28.793, lon: 76.1397 },
+  },
   'Uttar Pradesh': {
     Lucknow: { lat: 26.8467, lon: 80.9462 },
     Kanpur: { lat: 26.4499, lon: 80.3319 },
@@ -52,12 +75,26 @@ const DISTRICT_COORDINATES = {
     Prayagraj: { lat: 25.4358, lon: 81.8463 },
     Agra: { lat: 27.1767, lon: 78.0081 },
   },
+  'West Bengal': {
+    Kolkata: { lat: 22.5726, lon: 88.3639 },
+    Hooghly: { lat: 22.9088, lon: 88.3967 },
+    Bardhaman: { lat: 23.2324, lon: 87.8615 },
+    Nadia: { lat: 23.471, lon: 88.5565 },
+    Jalpaiguri: { lat: 26.5435, lon: 88.7205 },
+  },
   'Tamil Nadu': {
     Coimbatore: { lat: 11.0168, lon: 76.9558 },
     Madurai: { lat: 9.9252, lon: 78.1198 },
     Salem: { lat: 11.6643, lon: 78.146 },
     Thanjavur: { lat: 10.787, lon: 79.1378 },
     Erode: { lat: 11.341, lon: 77.7172 },
+  },
+  Kerala: {
+    Alappuzha: { lat: 9.4981, lon: 76.3388 },
+    Palakkad: { lat: 10.7867, lon: 76.6548 },
+    Thrissur: { lat: 10.5276, lon: 76.2144 },
+    Kottayam: { lat: 9.5916, lon: 76.5222 },
+    Kozhikode: { lat: 11.2588, lon: 75.7804 },
   },
 }
 

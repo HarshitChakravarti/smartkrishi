@@ -5,7 +5,9 @@ from __future__ import annotations
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
 DATA_DIR = os.path.join(BASE_DIR, "data")
+DATASET_DIR = os.path.join(PROJECT_ROOT, "dataset")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 CLIMATE_DIR = os.path.join(DATA_DIR, "climate")
 
@@ -17,7 +19,7 @@ SCALER_INFO_PATH = os.path.join(MODELS_DIR, "scaler_info.json")
 MODEL_METRICS_PATH = os.path.join(MODELS_DIR, "model_metrics.json")
 CLIMATE_ALIGNMENT_PATH = os.path.join(MODELS_DIR, "climate_alignment.json")
 
-DATASET_PATH = os.path.join(DATA_DIR, "crop_recommendation.csv")
+DATASET_PATH = os.path.join(DATASET_DIR, "crop_recommendation.csv")
 TRAINING_PROFILES_PATH = os.path.join(DATA_DIR, "training_crop_profiles.json")
 
 RAINFALL_DATA_PATH = os.path.join(CLIMATE_DIR, "rainfall_by_state_month.json")

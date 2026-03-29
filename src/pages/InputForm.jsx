@@ -17,6 +17,17 @@ const STATES = [
     ],
   },
   {
+    value: 'Madhya Pradesh',
+    label: { en: 'Madhya Pradesh', hi: 'मध्य प्रदेश' },
+    districts: [
+      { value: 'Indore', label: { en: 'Indore', hi: 'इंदौर' } },
+      { value: 'Ujjain', label: { en: 'Ujjain', hi: 'उज्जैन' } },
+      { value: 'Bhopal', label: { en: 'Bhopal', hi: 'भोपाल' } },
+      { value: 'Jabalpur', label: { en: 'Jabalpur', hi: 'जबलपुर' } },
+      { value: 'Gwalior', label: { en: 'Gwalior', hi: 'ग्वालियर' } },
+    ],
+  },
+  {
     value: 'Karnataka',
     label: { en: 'Karnataka', hi: 'कर्नाटक' },
     districts: [
@@ -39,6 +50,17 @@ const STATES = [
     ],
   },
   {
+    value: 'Rajasthan',
+    label: { en: 'Rajasthan', hi: 'राजस्थान' },
+    districts: [
+      { value: 'Jaipur', label: { en: 'Jaipur', hi: 'जयपुर' } },
+      { value: 'Jodhpur', label: { en: 'Jodhpur', hi: 'जोधपुर' } },
+      { value: 'Udaipur', label: { en: 'Udaipur', hi: 'उदयपुर' } },
+      { value: 'Kota', label: { en: 'Kota', hi: 'कोटा' } },
+      { value: 'Bikaner', label: { en: 'Bikaner', hi: 'बीकानेर' } },
+    ],
+  },
+  {
     value: 'Punjab',
     label: { en: 'Punjab', hi: 'पंजाब' },
     districts: [
@@ -47,6 +69,17 @@ const STATES = [
       { value: 'Patiala', label: { en: 'Patiala', hi: 'पटियाला' } },
       { value: 'Bathinda', label: { en: 'Bathinda', hi: 'बठिंडा' } },
       { value: 'Jalandhar', label: { en: 'Jalandhar', hi: 'जालंधर' } },
+    ],
+  },
+  {
+    value: 'Haryana',
+    label: { en: 'Haryana', hi: 'हरियाणा' },
+    districts: [
+      { value: 'Hisar', label: { en: 'Hisar', hi: 'हिसार' } },
+      { value: 'Karnal', label: { en: 'Karnal', hi: 'करनाल' } },
+      { value: 'Rohtak', label: { en: 'Rohtak', hi: 'रोहतक' } },
+      { value: 'Sirsa', label: { en: 'Sirsa', hi: 'सिरसा' } },
+      { value: 'Bhiwani', label: { en: 'Bhiwani', hi: 'भिवानी' } },
     ],
   },
   {
@@ -61,6 +94,17 @@ const STATES = [
     ],
   },
   {
+    value: 'West Bengal',
+    label: { en: 'West Bengal', hi: 'पश्चिम बंगाल' },
+    districts: [
+      { value: 'Kolkata', label: { en: 'Kolkata', hi: 'कोलकाता' } },
+      { value: 'Hooghly', label: { en: 'Hooghly', hi: 'हुगली' } },
+      { value: 'Bardhaman', label: { en: 'Bardhaman', hi: 'बर्धमान' } },
+      { value: 'Nadia', label: { en: 'Nadia', hi: 'नदिया' } },
+      { value: 'Jalpaiguri', label: { en: 'Jalpaiguri', hi: 'जलपाईगुड़ी' } },
+    ],
+  },
+  {
     value: 'Tamil Nadu',
     label: { en: 'Tamil Nadu', hi: 'तमिलनाडु' },
     districts: [
@@ -71,33 +115,129 @@ const STATES = [
       { value: 'Erode', label: { en: 'Erode', hi: 'ईरोड' } },
     ],
   },
+  {
+    value: 'Kerala',
+    label: { en: 'Kerala', hi: 'केरल' },
+    districts: [
+      { value: 'Alappuzha', label: { en: 'Alappuzha', hi: 'अलप्पुझा' } },
+      { value: 'Palakkad', label: { en: 'Palakkad', hi: 'पालक्काड' } },
+      { value: 'Thrissur', label: { en: 'Thrissur', hi: 'त्रिशूर' } },
+      { value: 'Kottayam', label: { en: 'Kottayam', hi: 'कोट्टायम' } },
+      { value: 'Kozhikode', label: { en: 'Kozhikode', hi: 'कोझिकोड' } },
+    ],
+  },
 ]
 
-const MONTHS = [
-  { value: 'January', label: { en: 'January', hi: 'जनवरी' } },
-  { value: 'February', label: { en: 'February', hi: 'फरवरी' } },
-  { value: 'March', label: { en: 'March', hi: 'मार्च' } },
-  { value: 'April', label: { en: 'April', hi: 'अप्रैल' } },
-  { value: 'May', label: { en: 'May', hi: 'मई' } },
-  { value: 'June', label: { en: 'June', hi: 'जून' } },
-  { value: 'July', label: { en: 'July', hi: 'जुलाई' } },
-  { value: 'August', label: { en: 'August', hi: 'अगस्त' } },
-  { value: 'September', label: { en: 'September', hi: 'सितंबर' } },
-  { value: 'October', label: { en: 'October', hi: 'अक्टूबर' } },
-  { value: 'November', label: { en: 'November', hi: 'नवंबर' } },
-  { value: 'December', label: { en: 'December', hi: 'दिसंबर' } },
+const MONTH_OPTIONS = [
+  { value: 'January', label: 'January (जनवरी)' },
+  { value: 'February', label: 'February (फरवरी)' },
+  { value: 'March', label: 'March (मार्च)' },
+  { value: 'April', label: 'April (अप्रैल)' },
+  { value: 'May', label: 'May (मई)' },
+  { value: 'June', label: 'June (जून)' },
+  { value: 'July', label: 'July (जुलाई)' },
+  { value: 'August', label: 'August (अगस्त)' },
+  { value: 'September', label: 'September (सितंबर)' },
+  { value: 'October', label: 'October (अक्टूबर)' },
+  { value: 'November', label: 'November (नवंबर)' },
+  { value: 'December', label: 'December (दिसंबर)' },
 ]
 
-const CROPS = [
-  { value: 'Rice', label: { en: 'Rice', hi: 'धान' } },
-  { value: 'Wheat', label: { en: 'Wheat', hi: 'गेहूं' } },
-  { value: 'Cotton', label: { en: 'Cotton', hi: 'कपास' } },
-  { value: 'Sugarcane', label: { en: 'Sugarcane', hi: 'गन्ना' } },
-  { value: 'Maize', label: { en: 'Maize', hi: 'मक्का' } },
-  { value: 'Millets', label: { en: 'Millets', hi: 'बाजरा' } },
-  { value: 'Pulses', label: { en: 'Pulses', hi: 'दलहन' } },
-  { value: 'Groundnut', label: { en: 'Groundnut', hi: 'मूंगफली' } },
+const PREVIOUS_CROP_OPTIONS = [
+  { value: 'none', label: 'None / First Crop (कोई नहीं / पहली फसल)', category: 'none' },
+  { value: 'rice', label: 'Rice (धान)', category: 'cereals' },
+  { value: 'wheat', label: 'Wheat (गेहूं)', category: 'cereals' },
+  { value: 'maize', label: 'Maize / Corn (मक्का)', category: 'cereals' },
+  { value: 'millet', label: 'Millet / Bajra (बाजरा)', category: 'cereals' },
+  { value: 'chickpea', label: 'Chickpea / Gram (चना)', category: 'pulses' },
+  { value: 'lentil', label: 'Lentil / Masoor (मसूर)', category: 'pulses' },
+  { value: 'mungbean', label: 'Mungbean / Moong (मूंग)', category: 'pulses' },
+  { value: 'blackgram', label: 'Black Gram / Urad (उड़द)', category: 'pulses' },
+  { value: 'pigeonpeas', label: 'Pigeon Pea / Arhar (अरहर / तूर)', category: 'pulses' },
+  { value: 'mothbeans', label: 'Moth Beans (मोठ)', category: 'pulses' },
+  { value: 'kidneybeans', label: 'Kidney Beans / Rajma (राजमा)', category: 'pulses' },
+  { value: 'mustard', label: 'Mustard / Sarson (सरसों)', category: 'oilseeds' },
+  { value: 'soybean', label: 'Soybean (सोयाबीन)', category: 'oilseeds' },
+  { value: 'cotton', label: 'Cotton (कपास)', category: 'commercial' },
+  { value: 'jute', label: 'Jute / Pat (पटसन)', category: 'commercial' },
+  { value: 'banana', label: 'Banana (केला)', category: 'fruits' },
+  { value: 'mango', label: 'Mango (आम)', category: 'fruits' },
+  { value: 'watermelon', label: 'Watermelon (तरबूज)', category: 'fruits' },
+  { value: 'muskmelon', label: 'Muskmelon (खरबूजा)', category: 'fruits' },
+  { value: 'pomegranate', label: 'Pomegranate (अनार)', category: 'fruits' },
+  { value: 'grapes', label: 'Grapes (अंगूर)', category: 'fruits' },
+  { value: 'apple', label: 'Apple (सेब)', category: 'fruits' },
+  { value: 'orange', label: 'Orange (संतरा)', category: 'fruits' },
+  { value: 'papaya', label: 'Papaya (पपीता)', category: 'fruits' },
+  { value: 'coconut', label: 'Coconut (नारियल)', category: 'fruits' },
+  { value: 'coffee', label: 'Coffee (कॉफी)', category: 'plantation' },
 ]
+
+const PREVIOUS_CROP_CATEGORY_LABELS = {
+  none: '— Select —',
+  cereals: '🌾 Cereals (अनाज)',
+  pulses: '🫘 Pulses & Legumes (दालें)',
+  oilseeds: '🫒 Oilseeds (तिलहन)',
+  commercial: '🏭 Fiber & Commercial (व्यावसायिक)',
+  fruits: '🍎 Fruits (फल)',
+  plantation: '🌿 Plantation (बागान)',
+}
+
+const PREVIOUS_CROP_CATEGORY_ORDER = ['none', 'cereals', 'pulses', 'oilseeds', 'commercial', 'fruits', 'plantation']
+
+const SUPPORTED_PREVIOUS_CROPS = new Set(PREVIOUS_CROP_OPTIONS.map((crop) => crop.value))
+
+function normalizePreviousCropValue(value) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+
+  const aliases = {
+    '': 'none',
+    firstcrop: 'none',
+    none: 'none',
+    rice: 'rice',
+    wheat: 'wheat',
+    cotton: 'cotton',
+    maize: 'maize',
+    corn: 'maize',
+    soybean: 'soybean',
+    millet: 'millet',
+    millets: 'millet',
+    chickpea: 'chickpea',
+    gram: 'chickpea',
+    lentil: 'lentil',
+    mungbean: 'mungbean',
+    moong: 'mungbean',
+    blackgram: 'blackgram',
+    urad: 'blackgram',
+    pigeonpeas: 'pigeonpeas',
+    pigeonpea: 'pigeonpeas',
+    arhar: 'pigeonpeas',
+    toor: 'pigeonpeas',
+    mothbeans: 'mothbeans',
+    kidneybeans: 'kidneybeans',
+    rajma: 'kidneybeans',
+    mustard: 'mustard',
+    sarson: 'mustard',
+    jute: 'jute',
+    banana: 'banana',
+    mango: 'mango',
+    watermelon: 'watermelon',
+    muskmelon: 'muskmelon',
+    pomegranate: 'pomegranate',
+    grapes: 'grapes',
+    apple: 'apple',
+    orange: 'orange',
+    papaya: 'papaya',
+    coconut: 'coconut',
+    coffee: 'coffee',
+  }
+
+  const mapped = aliases[normalized] || normalized
+  return SUPPORTED_PREVIOUS_CROPS.has(mapped) ? mapped : 'none'
+}
 
 function StepBadge({ number, label, active, done }) {
   return (
@@ -163,7 +303,7 @@ export default function InputForm() {
   const [landArea, setLandArea] = useState('5')
 
   const [farmingMonth, setFarmingMonth] = useState('June')
-  const [previousCrop, setPreviousCrop] = useState('Rice')
+  const [previousCrop, setPreviousCrop] = useState('none')
   const [previousCropMonth, setPreviousCropMonth] = useState('February')
 
   const [nitrogen, setNitrogen] = useState(50)
@@ -190,6 +330,15 @@ export default function InputForm() {
     return selected?.districts || []
   }, [selectedState])
 
+  const groupedPreviousCrops = useMemo(() => {
+    return PREVIOUS_CROP_OPTIONS.reduce((groups, crop) => {
+      const current = groups[crop.category] || []
+      current.push(crop)
+      groups[crop.category] = current
+      return groups
+    }, {})
+  }, [])
+
   useEffect(() => {
     if (!districts.find((districtItem) => districtItem.value === district)) {
       setDistrict(districts[0]?.value || '')
@@ -205,7 +354,7 @@ export default function InputForm() {
       setLandArea('5')
       setActiveTab('current')
       setFarmingMonth('June')
-      setPreviousCrop('Rice')
+      setPreviousCrop('none')
       setPreviousCropMonth('February')
       setNitrogen(50)
       setPhosphorus(50)
@@ -231,7 +380,7 @@ export default function InputForm() {
       setLandArea(parsed.landArea || '5')
       setActiveTab(parsed.activeTab || 'current')
       setFarmingMonth(parsed.farmingMonth || 'June')
-      setPreviousCrop(parsed.previousCrop || 'Rice')
+      setPreviousCrop(normalizePreviousCropValue(parsed.previousCrop))
       setPreviousCropMonth(parsed.previousCropMonth || 'February')
       setNitrogen(Number(parsed.N ?? 50))
       setPhosphorus(Number(parsed.P ?? 50))
@@ -546,9 +695,9 @@ export default function InputForm() {
                         onChange={(e) => setFarmingMonth(e.target.value)}
                         className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
                       >
-                        {MONTHS.map((month) => (
+                        {MONTH_OPTIONS.map((month) => (
                           <option key={month.value} value={month.value}>
-                            {month.label[locale]}
+                            {month.label}
                           </option>
                         ))}
                       </select>
@@ -564,10 +713,14 @@ export default function InputForm() {
                         onChange={(e) => setPreviousCrop(e.target.value)}
                         className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
                       >
-                        {CROPS.map((crop) => (
-                          <option key={crop.value} value={crop.value}>
-                            {crop.label[locale]}
-                          </option>
+                        {PREVIOUS_CROP_CATEGORY_ORDER.map((category) => (
+                          <optgroup key={category} label={PREVIOUS_CROP_CATEGORY_LABELS[category]}>
+                            {(groupedPreviousCrops[category] || []).map((crop) => (
+                              <option key={crop.value} value={crop.value}>
+                                {crop.label}
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                     </div>
@@ -582,9 +735,9 @@ export default function InputForm() {
                         onChange={(e) => setPreviousCropMonth(e.target.value)}
                         className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
                       >
-                        {MONTHS.map((month) => (
+                        {MONTH_OPTIONS.map((month) => (
                           <option key={month.value} value={month.value}>
-                            {month.label[locale]}
+                            {month.label}
                           </option>
                         ))}
                       </select>

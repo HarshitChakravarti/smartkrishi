@@ -1,6 +1,36 @@
 {
-  "Kharif": ["rice", "maize", "cotton", "jute", "mungbean", "mothbeans", "pigeonpeas"],
-  "Rabi": ["wheat", "chickpea", "lentil", "blackgram", "mustard"],
-  "Zaid": ["watermelon", "muskmelon", "mungbean"],
-  "Perennial": ["banana", "coconut", "papaya", "coffee", "orange", "mango", "apple", "grapes", "pomegranate"]
+  "Kharif": [
+    "rice",
+    "maize",
+    "cotton",
+    "jute",
+    "mungbean",
+    "mothbeans",
+    "pigeonpeas",
+    "soybean",
+    "millet"
+  ],
+  "Rabi": [
+    "wheat",
+    "chickpea",
+    "lentil",
+    "blackgram",
+    "mustard"
+  ],
+  "Zaid": [
+    "watermelon",
+    "muskmelon",
+    "mungbean"
+  ],
+  "Perennial": [
+    "banana",
+    "coconut",
+    "papaya",
+    "coffee",
+    "orange",
+    "mango",
+    "apple",
+    "grapes",
+    "pomegranate"
+  ]
 }

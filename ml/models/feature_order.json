@@ -36,8 +36,11 @@
     "moisture_index"
   ],
   "model_type": "XGBoost",
-  "accuracy": 0.941667,
-  "crop_classes": [
+  "accuracy": 0.929171,
+  "n_crops": 26,
+  "n_samples": 2500,
+  "augmented_samples": 5362,
+  "crops": [
     "apple",
     "banana",
     "blackgram",
@@ -51,6 +54,7 @@
     "lentil",
     "maize",
     "mango",
+    "millet",
     "mothbeans",
     "mungbean",
     "muskmelon",
@@ -60,7 +64,9 @@
     "pigeonpeas",
     "pomegranate",
     "rice",
+    "soybean",
     "watermelon",
     "wheat"
-  ]
+  ],
+  "sklearn_version": "1.6.1"
 }
