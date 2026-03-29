@@ -11,8 +11,8 @@ import pandas as pd
 import sklearn
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, f1_score
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 try:
@@ -69,6 +69,8 @@ except ImportError:  # pragma: no cover
 LABEL_COLUMN = "label"
 TARGET_COUNT = 200
 REQUIRED_CROPS = ["soybean", "millet", "wheat", "rice", "maize", "chickpea", "cotton", "mustard"]
+BALANCE_UPPER_MULTIPLIER = 1.8
+BALANCE_LOWER_MULTIPLIER = 0.6
 SCENARIO_NOISE = {
     "N": 4.0,
     "P": 4.0,
@@ -127,6 +129,113 @@ REAL_WORLD_SCENARIOS = [
         "features": {"N": 60, "P": 45, "K": 50, "temperature": 27, "humidity": 85, "ph": 5.8, "rainfall": 280},
         "expected": "rice",
         "augment_count": 16,
+    },
+]
+
+TARGETED_AUGMENTATION_SPECS = [
+    {
+        "label": "muskmelon",
+        "count": 30,
+        "ranges": {
+            "N": (80, 120), "P": (60, 80), "K": (40, 55), "temperature": (28, 35),
+            "humidity": (60, 75), "ph": (6.2, 7.0), "rainfall": (250, 400),
+        },
+    },
+    {
+        "label": "watermelon",
+        "count": 30,
+        "ranges": {
+            "N": (80, 120), "P": (40, 60), "K": (55, 80), "temperature": (28, 35),
+            "humidity": (75, 90), "ph": (5.5, 6.5), "rainfall": (400, 600),
+        },
+    },
+    {
+        "label": "chickpea",
+        "count": 25,
+        "ranges": {
+            "N": (20, 40), "P": (50, 70), "K": (60, 80), "temperature": (22, 28),
+            "humidity": (40, 60), "ph": (6.5, 7.5), "rainfall": (60, 100),
+        },
+    },
+    {
+        "label": "lentil",
+        "count": 25,
+        "ranges": {
+            "N": (20, 40), "P": (50, 70), "K": (15, 25), "temperature": (15, 22),
+            "humidity": (50, 70), "ph": (6.0, 7.0), "rainfall": (50, 80),
+        },
+    },
+    {
+        "label": "mustard",
+        "count": 25,
+        "ranges": {
+            "N": (60, 80), "P": (40, 60), "K": (15, 25), "temperature": (12, 22),
+            "humidity": (30, 55), "ph": (5.5, 7.0), "rainfall": (30, 60),
+        },
+    },
+    {
+        "label": "maize",
+        "count": 25,
+        "ranges": {
+            "N": (80, 120), "P": (35, 50), "K": (30, 50), "temperature": (22, 30),
+            "humidity": (55, 75), "ph": (5.5, 7.0), "rainfall": (80, 120),
+        },
+    },
+    {
+        "label": "cotton",
+        "count": 25,
+        "ranges": {
+            "N": (40, 60), "P": (35, 50), "K": (15, 25), "temperature": (28, 35),
+            "humidity": (45, 65), "ph": (6.0, 7.5), "rainfall": (60, 100),
+        },
+    },
+    {
+        "label": "rice",
+        "count": 25,
+        "ranges": {
+            "N": (60, 80), "P": (35, 50), "K": (35, 50), "temperature": (25, 32),
+            "humidity": (80, 95), "ph": (5.5, 6.5), "rainfall": (200, 300),
+        },
+    },
+    {
+        "label": "jute",
+        "count": 25,
+        "ranges": {
+            "N": (40, 60), "P": (35, 50), "K": (35, 45), "temperature": (25, 32),
+            "humidity": (75, 90), "ph": (6.5, 7.5), "rainfall": (150, 250),
+        },
+    },
+    {
+        "label": "soybean",
+        "count": 15,
+        "ranges": {
+            "N": (20, 40), "P": (55, 75), "K": (55, 75), "temperature": (25, 32),
+            "humidity": (65, 80), "ph": (5.5, 7.0), "rainfall": (100, 200),
+        },
+    },
+    {
+        "label": "maize",
+        "count": 15,
+        "ranges": {
+            "N": (80, 120), "P": (35, 50), "K": (30, 50), "temperature": (22, 30),
+            "humidity": (55, 75), "ph": (5.5, 7.0), "rainfall": (80, 120),
+        },
+    },
+    {
+        "label": "wheat",
+        "count": 15,
+        "ranges": {
+            "N": (80, 120), "P": (40, 60), "K": (15, 25), "temperature": (15, 22),
+            "humidity": (50, 65), "ph": (6.5, 7.5), "rainfall": (40, 80),
+        },
+    },
+    {
+        "label": "millet",
+        "count": 15,
+        "ranges": {
+            "N": (10, 30), "P": (30, 50), "K": (30, 50), "temperature": (28, 35),
+            "humidity": (50, 70), "ph": (6.0, 7.0), "rainfall": (50, 100),
+        },
     },
 ]
 
@@ -327,8 +436,71 @@ def _generate_scenario_anchor_rows(df: pd.DataFrame, rng: np.random.Generator) -
     return rows
 
 
-def _augment_dataset(df: pd.DataFrame) -> pd.DataFrame:
-    _print_header("STEP 3: Data Augmentation")
+def _generate_rows_from_ranges(
+    label: str,
+    count: int,
+    ranges: dict[str, tuple[float, float]],
+    rng: np.random.Generator,
+) -> list[dict[str, float | str]]:
+    rows: list[dict[str, float | str]] = []
+    for _ in range(count):
+        row: dict[str, float | str] = {LABEL_COLUMN: label}
+        for feature_name in BASE_FEATURES:
+            low, high = ranges[feature_name]
+            row[feature_name] = round(float(rng.uniform(low, high)), 2)
+        rows.append(row)
+    return rows
+
+
+def _generate_targeted_confusion_rows(rng: np.random.Generator) -> list[dict[str, float | str]]:
+    _print_header("STEP 4: Targeted Confusion-Pair Augmentation")
+    rows: list[dict[str, float | str]] = []
+    counts: dict[str, int] = {}
+    for spec in TARGETED_AUGMENTATION_SPECS:
+        generated = _generate_rows_from_ranges(spec["label"], int(spec["count"]), spec["ranges"], rng)
+        rows.extend(generated)
+        counts[spec["label"]] = counts.get(spec["label"], 0) + int(spec["count"])
+    for crop_name, count in sorted(counts.items()):
+        print(f"  {crop_name:15s}: +{count:3d} targeted rows")
+    print(f"\nTargeted rows added: {len(rows)}")
+    return rows
+
+
+def _balance_training_classes(df: pd.DataFrame, rng: np.random.Generator) -> pd.DataFrame:
+    _print_header("STEP 5: Class Balance Check")
+    counts = df[LABEL_COLUMN].value_counts()
+    median_count = int(counts.median())
+    max_allowed = int(np.floor(BALANCE_UPPER_MULTIPLIER * median_count))
+    min_allowed = int(np.ceil(BALANCE_LOWER_MULTIPLIER * median_count))
+    print(f"Median count: {median_count}, min allowed: {min_allowed}, max allowed: {max_allowed}")
+
+    kb = CropKnowledgeBase()
+    balanced_parts: list[pd.DataFrame] = []
+    for crop_name in sorted(counts.index):
+        crop_frame = df[df[LABEL_COLUMN] == crop_name].copy()
+        current_count = len(crop_frame)
+        if current_count > max_allowed:
+            crop_frame = crop_frame.sample(n=max_allowed, random_state=42)
+        elif current_count < min_allowed:
+            needed = min_allowed - current_count
+            kb_rows = _generate_kb_rows(str(crop_name), needed, kb, rng)
+            if len(kb_rows) < needed and not crop_frame.empty:
+                kb_rows.extend(_generate_jittered_rows(str(crop_name), crop_frame, needed - len(kb_rows), rng))
+            if kb_rows:
+                crop_frame = pd.concat([crop_frame, pd.DataFrame(kb_rows[:needed])], ignore_index=True)
+        balanced_parts.append(crop_frame)
+
+    balanced = pd.concat(balanced_parts, ignore_index=True)
+    balanced = balanced.sample(frac=1.0, random_state=42).reset_index(drop=True)
+    final_counts = balanced[LABEL_COLUMN].value_counts().sort_index()
+    print("Final class distribution:")
+    for crop_name, count in final_counts.items():
+        print(f"  {crop_name:15s}: {int(count):4d}")
+    return balanced
+
+
+def _augment_training_fold(df: pd.DataFrame) -> pd.DataFrame:
+    _print_header("STEP 3: Train-Fold Augmentation")
     rng = np.random.default_rng(42)
     kb = CropKnowledgeBase()
     augmented_rows: list[dict] = []
@@ -347,17 +519,17 @@ def _augment_dataset(df: pd.DataFrame) -> pd.DataFrame:
         augmented_rows.extend(kb_rows[:needed])
         print(f"  {crop_name:15s}: {len(crop_frame)} -> {len(crop_frame) + needed} (+{needed} synthetic)")
 
-    for crop_name in ["wheat", "mustard"]:
-        if crop_name in existing_crops:
-            continue
-        kb_rows = _generate_kb_rows(crop_name, TARGET_COUNT, kb, rng)
+    if "mustard" not in existing_crops:
+        kb_rows = _generate_kb_rows("mustard", TARGET_COUNT, kb, rng)
         if len(kb_rows) < TARGET_COUNT:
-            raise ValueError(f"Unable to synthesize enough rows for required crop '{crop_name}'")
+            raise ValueError("Unable to synthesize enough rows for required crop 'mustard'")
         augmented_rows.extend(kb_rows[:TARGET_COUNT])
-        print(f"  {crop_name:15s}: 0 -> {TARGET_COUNT} (+{TARGET_COUNT} synthetic)")
+        print(f"  mustard        : 0 -> {TARGET_COUNT} (+{TARGET_COUNT} synthetic)")
 
     scenario_rows = _generate_scenario_anchor_rows(df, rng)
-    combined_rows = augmented_rows + scenario_rows
+    targeted_rows = _generate_targeted_confusion_rows(rng)
+    combined_rows = augmented_rows + scenario_rows + targeted_rows
+
     if not combined_rows:
         print("\nNo augmentation needed.")
         return df
@@ -365,97 +537,96 @@ def _augment_dataset(df: pd.DataFrame) -> pd.DataFrame:
     augmented_df = pd.DataFrame(combined_rows)
     combined = pd.concat([df, augmented_df], ignore_index=True)
     combined[LABEL_COLUMN] = combined[LABEL_COLUMN].astype(str).str.strip().str.lower()
-    combined = combined.sample(frac=1.0, random_state=42).reset_index(drop=True)
-
-    counts = combined[LABEL_COLUMN].value_counts().sort_index()
-    print(f"\nAugmented dataset: {len(combined)} samples, {combined[LABEL_COLUMN].nunique()} crops")
-    print("Augmented class distribution:")
-    for crop_name, count in counts.items():
-        print(f"  {crop_name:15s}: {count:4d}")
+    combined = _balance_training_classes(combined, rng)
+    print(f"\nAugmented train fold: {len(combined)} samples, {combined[LABEL_COLUMN].nunique()} crops")
     return combined
 
 
-def _train_models(
-    X_train_scaled: np.ndarray,
-    X_test_scaled: np.ndarray,
-    y_train: np.ndarray,
-    y_test: np.ndarray,
-    class_count: int,
-) -> tuple[str, object, dict[str, dict[str, float]]]:
-    _print_header("STEP 5: Model Training & Comparison")
-    models: dict[str, object] = {}
-    scores: dict[str, dict[str, float]] = {}
-
-    rf_params = {
-        "n_estimators": 500,
-        "max_depth": 30,
-        "min_samples_split": 3,
-        "min_samples_leaf": 1,
-        "class_weight": "balanced",
-        "random_state": 42,
-        "n_jobs": -1,
-        "oob_score": True,
-    }
-    rf_model = RandomForestClassifier(**rf_params)
-    rf_model.fit(X_train_scaled, y_train)
-    models["RandomForest"] = rf_model
-
-    calibrated_rf = CalibratedClassifierCV(
-        estimator=RandomForestClassifier(**{**rf_params, "oob_score": False}),
-        method="sigmoid",
-        cv=5,
+def _default_xgb(class_count: int) -> object:
+    return XGBClassifier(
+        objective="multi:softprob",
+        num_class=class_count,
+        n_estimators=300,
+        max_depth=8,
+        learning_rate=0.1,
+        min_child_weight=1,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+        n_jobs=-1,
+        eval_metric="mlogloss",
     )
-    calibrated_rf.fit(X_train_scaled, y_train)
-    models["CalibratedRF"] = calibrated_rf
 
-    if XGBClassifier is not None:
-        xgb_model = XGBClassifier(
-            objective="multi:softprob",
-            num_class=class_count,
-            n_estimators=300,
-            max_depth=8,
-            learning_rate=0.1,
-            subsample=0.8,
-            colsample_bytree=0.8,
-            random_state=42,
-            n_jobs=-1,
-            eval_metric="mlogloss",
-        )
-        xgb_model.fit(X_train_scaled, y_train)
-        models["XGBoost"] = xgb_model
 
-    best_name = ""
-    best_score = -1.0
+def _train_xgboost_with_tuning(
+    X_train_scaled: np.ndarray,
+    y_train: np.ndarray,
+    class_count: int,
+) -> tuple[str, object, dict]:
+    _print_header("STEP 6: XGBoost CV Tuning (Macro F1)")
+    if XGBClassifier is None:
+        raise ImportError("xgboost is required for the requested tuning workflow")
 
-    for name, model in models.items():
-        predictions = model.predict(X_test_scaled)
-        probabilities = model.predict_proba(X_test_scaled)
-        max_probabilities = probabilities.max(axis=1)
-        accuracy = float(accuracy_score(y_test, predictions))
-        correct_mask = predictions == y_test
-        avg_correct_conf = float(max_probabilities[correct_mask].mean()) if correct_mask.any() else 0.0
+    scorer = "f1_macro"
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-        scores[name] = {
-            "accuracy": accuracy,
-            "avg_correct_confidence": avg_correct_conf,
-            "samples_gt_080": int((max_probabilities > 0.80).sum()),
-            "samples_gt_060": int((max_probabilities > 0.60).sum()),
-            "samples_lt_030": int((max_probabilities < 0.30).sum()),
-        }
+    default_model = _default_xgb(class_count)
+    default_cv = float(cross_val_score(default_model, X_train_scaled, y_train, cv=cv, scoring=scorer, n_jobs=-1).mean())
 
-        print(f"\n{name}:")
-        print(f"  Accuracy: {accuracy * 100:.1f}%")
-        print(f"  Avg confidence (correct): {avg_correct_conf * 100:.1f}%")
-        print(f"  Samples >80% conf: {(max_probabilities > 0.80).sum()}/{len(max_probabilities)}")
-        print(f"  Samples >60% conf: {(max_probabilities > 0.60).sum()}/{len(max_probabilities)}")
-        print(f"  Samples <30% conf: {(max_probabilities < 0.30).sum()}/{len(max_probabilities)}")
+    grid = {
+        "n_estimators": [300, 500],
+        "max_depth": [6, 8, 10],
+        "learning_rate": [0.05, 0.1],
+        "min_child_weight": [1, 3],
+        "subsample": [0.8, 1.0],
+        "colsample_bytree": [0.7, 0.9],
+    }
 
-        if avg_correct_conf > best_score:
-            best_name = name
-            best_score = avg_correct_conf
+    estimator = XGBClassifier(
+        objective="multi:softprob",
+        num_class=class_count,
+        random_state=42,
+        n_jobs=-1,
+        eval_metric="mlogloss",
+    )
+    search = GridSearchCV(
+        estimator=estimator,
+        param_grid=grid,
+        scoring=scorer,
+        cv=cv,
+        n_jobs=-1,
+        verbose=1,
+    )
+    search.fit(X_train_scaled, y_train)
 
-    print(f"\nSelected model: {best_name} (avg correct conf: {best_score * 100:.1f}%)")
-    return best_name, models[best_name], scores
+    tuned_cv = float(search.best_score_)
+    improvement = tuned_cv - default_cv
+    use_default = improvement < 0.005
+
+    if use_default:
+        selected_model = default_model
+        selected_name = "XGBoost-default"
+        selected_model.fit(X_train_scaled, y_train)
+    else:
+        selected_model = search.best_estimator_
+        selected_name = "XGBoost-tuned"
+
+    print(f"Default CV macro F1: {default_cv:.4f}")
+    print(f"Tuned CV macro F1:   {tuned_cv:.4f}")
+    print(f"Improvement:         {improvement:.4f}")
+    print(f"Selected:            {selected_name}")
+
+    return selected_name, selected_model, {
+        "default_cv_macro_f1": round(default_cv, 6),
+        "best_cv_macro_f1": round(tuned_cv, 6),
+        "cv_improvement": round(improvement, 6),
+        "used_default": use_default,
+        "best_params": search.best_params_,
+        "grid_size": int(
+            len(grid["n_estimators"]) * len(grid["max_depth"]) * len(grid["learning_rate"]) *
+            len(grid["min_child_weight"]) * len(grid["subsample"]) * len(grid["colsample_bytree"])
+        ),
+    }
 
 
 def _print_per_crop_performance(
@@ -556,39 +727,46 @@ def train_enhanced() -> dict:
     raw_df = _load_dataset()
     _print_dataset_summary(raw_df)
 
-    augmented_df = _augment_dataset(raw_df)
-    training_profiles = _build_training_profiles(augmented_df)
-    _print_feature_contract()
-
-    engineered_df = add_engineered_features(augmented_df[BASE_FEATURES])
-    engineered_df[LABEL_COLUMN] = augmented_df[LABEL_COLUMN].values
-
-    X = engineered_df[EXTENDED_FEATURES].copy()
-    y = engineered_df[LABEL_COLUMN].copy()
-
-    encoder = LabelEncoder()
-    y_encoded = encoder.fit_transform(y)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y_encoded,
+    _print_header("STEP 1: Split Before Augment (Integrity Fix)")
+    train_df_raw, test_df_raw = train_test_split(
+        raw_df,
         test_size=0.2,
         random_state=42,
-        stratify=y_encoded,
+        stratify=raw_df[LABEL_COLUMN],
     )
+    train_df_raw = train_df_raw.reset_index(drop=True)
+    test_df_raw = test_df_raw.reset_index(drop=True)
+    print(f"Raw train samples: {len(train_df_raw)}")
+    print(f"Raw test samples:  {len(test_df_raw)} (never augmented)")
+
+    augmented_train_df = _augment_training_fold(train_df_raw)
+    training_profiles = _build_training_profiles(augmented_train_df)
+    _print_feature_contract()
+
+    train_engineered = add_engineered_features(augmented_train_df[BASE_FEATURES])
+    train_engineered[LABEL_COLUMN] = augmented_train_df[LABEL_COLUMN].values
+    test_engineered = add_engineered_features(test_df_raw[BASE_FEATURES])
+    test_engineered[LABEL_COLUMN] = test_df_raw[LABEL_COLUMN].values
+
+    X_train = train_engineered[EXTENDED_FEATURES].copy()
+    y_train_labels = train_engineered[LABEL_COLUMN].copy()
+    X_test = test_engineered[EXTENDED_FEATURES].copy()
+    y_test_labels = test_engineered[LABEL_COLUMN].copy()
+
+    encoder = LabelEncoder()
+    y_train = encoder.fit_transform(y_train_labels)
+    y_test = encoder.transform(y_test_labels)
 
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    print(f"\nTraining samples: {len(X_train)}")
-    print(f"Test samples:     {len(X_test)}")
+    print(f"\nTraining samples (augmented): {len(X_train)}")
+    print(f"Test samples (raw holdout):   {len(X_test)}")
 
-    best_name, best_model, selection_scores = _train_models(
+    best_name, best_model, tuning_info = _train_xgboost_with_tuning(
         X_train_scaled,
-        X_test_scaled,
         y_train,
-        y_test,
         len(encoder.classes_),
     )
 
@@ -596,9 +774,25 @@ def train_enhanced() -> dict:
     test_accuracy = float(accuracy_score(y_test, test_predictions))
 
     _print_header("STEP 5B: Classification Report")
-    print(classification_report(y_test, test_predictions, target_names=encoder.classes_, zero_division=0))
+    print(
+        classification_report(
+            y_test,
+            test_predictions,
+            labels=np.arange(len(encoder.classes_)),
+            target_names=encoder.classes_,
+            zero_division=0,
+        )
+    )
+
+    macro_f1 = float(f1_score(y_test, test_predictions, average="macro", zero_division=0))
+    weighted_f1 = float(f1_score(y_test, test_predictions, average="weighted", zero_division=0))
+    print(f"Macro F1 (clean test):    {macro_f1:.4f}")
+    print(f"Weighted F1 (clean test): {weighted_f1:.4f}")
 
     per_crop_metrics = _print_per_crop_performance(best_name, best_model, X_test_scaled, y_test, encoder)
+    mustard_test_count = int((y_test_labels == "mustard").sum())
+    if mustard_test_count == 0:
+        print("\nmustard: no raw test data")
     scenario_outputs, scenario_pass_count = _scenario_validation(best_model, scaler, encoder)
 
     joblib.dump(best_model, MODEL_PATH)
@@ -617,7 +811,7 @@ def train_enhanced() -> dict:
             "accuracy": round(test_accuracy, 6),
             "n_crops": int(len(encoder.classes_)),
             "n_samples": int(len(raw_df)),
-            "augmented_samples": int(len(engineered_df)),
+            "augmented_samples": int(len(train_engineered)),
             "crops": list(encoder.classes_),
             "sklearn_version": sklearn.__version__,
         },
@@ -636,18 +830,21 @@ def train_enhanced() -> dict:
         MODEL_METRICS_PATH,
         {
             "model_type": best_name,
-            "sample_count": int(len(engineered_df)),
+            "sample_count": int(len(train_engineered)),
             "raw_sample_count": int(len(raw_df)),
             "class_count": int(len(encoder.classes_)),
             "feature_order": EXTENDED_FEATURES,
             "base_features": BASE_FEATURES,
             "derived_features": DERIVED_FEATURES,
             "accuracy": round(test_accuracy, 6),
-            "model_selection": selection_scores,
+            "macro_f1": round(macro_f1, 6),
+            "weighted_f1": round(weighted_f1, 6),
+            "model_selection": tuning_info,
             "per_crop_metrics": per_crop_metrics,
             "scenario_validation": scenario_outputs,
             "scenario_pass_count": scenario_pass_count,
             "scenario_total": len(REAL_WORLD_SCENARIOS),
+            "mustard_raw_test_samples": mustard_test_count,
             "sklearn_version": sklearn.__version__,
         },
     )
@@ -669,8 +866,10 @@ def train_enhanced() -> dict:
         "feature_order": EXTENDED_FEATURES,
         "scenario_pass_count": scenario_pass_count,
         "scenario_total": len(REAL_WORLD_SCENARIOS),
+        "macro_f1": macro_f1,
+        "weighted_f1": weighted_f1,
         "raw_sample_count": int(len(raw_df)),
-        "augmented_sample_count": int(len(engineered_df)),
+        "augmented_sample_count": int(len(train_engineered)),
     }
 
 

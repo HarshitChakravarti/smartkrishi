@@ -40,6 +40,122 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 
+def apply_confusion_tiebreakers(
+    probabilities: np.ndarray,
+    class_names: np.ndarray,
+    features: dict[str, Any],
+) -> np.ndarray:
+    """Adjust probabilities for known confusion pairs when top-2 predictions are close."""
+    probs = probabilities.copy()
+    if probs.size < 2:
+        return probs
+
+    sorted_idx = np.argsort(probs)
+    top2_idx = sorted_idx[-2:]
+    top_idx = int(sorted_idx[-1])
+    second_idx = int(sorted_idx[-2])
+    gap = float(probs[top_idx] - probs[second_idx])
+    if gap > 0.15:
+        return probs
+
+    top2_names = {str(class_names[top_idx]).lower(), str(class_names[second_idx]).lower()}
+    rainfall = float(features.get("rainfall", 0))
+    n_value = float(features.get("N", 0))
+    ph_value = float(features.get("ph", features.get("pH", 6.5)))
+    temperature = float(features.get("temperature", 25))
+    humidity = float(features.get("humidity", 70))
+    p_value = float(features.get("P", 0))
+    k_value = float(features.get("K", 0))
+
+    adjustments: dict[str, float] = {}
+
+    if top2_names == {"muskmelon", "watermelon"}:
+        if rainfall > 450:
+            adjustments["watermelon"] = adjustments.get("watermelon", 0.0) + 0.06
+            adjustments["muskmelon"] = adjustments.get("muskmelon", 0.0) - 0.03
+        elif rainfall < 350:
+            adjustments["muskmelon"] = adjustments.get("muskmelon", 0.0) + 0.06
+            adjustments["watermelon"] = adjustments.get("watermelon", 0.0) - 0.03
+        if ph_value < 6.2:
+            adjustments["watermelon"] = adjustments.get("watermelon", 0.0) + 0.03
+        elif ph_value > 6.5:
+            adjustments["muskmelon"] = adjustments.get("muskmelon", 0.0) + 0.03
+        pk_ratio = p_value / (k_value + 1.0)
+        if pk_ratio > 1.2:
+            adjustments["muskmelon"] = adjustments.get("muskmelon", 0.0) + 0.03
+        elif pk_ratio < 0.8:
+            adjustments["watermelon"] = adjustments.get("watermelon", 0.0) + 0.03
+    elif top2_names == {"chickpea", "lentil"}:
+        if temperature > 24:
+            adjustments["chickpea"] = adjustments.get("chickpea", 0.0) + 0.05
+        elif temperature < 20:
+            adjustments["lentil"] = adjustments.get("lentil", 0.0) + 0.05
+        if humidity < 50:
+            adjustments["chickpea"] = adjustments.get("chickpea", 0.0) + 0.04
+        elif humidity > 60:
+            adjustments["lentil"] = adjustments.get("lentil", 0.0) + 0.04
+    elif top2_names == {"chickpea", "mustard"}:
+        if n_value > 50:
+            adjustments["mustard"] = adjustments.get("mustard", 0.0) + 0.06
+        elif n_value < 35:
+            adjustments["chickpea"] = adjustments.get("chickpea", 0.0) + 0.06
+    elif top2_names == {"lentil", "mustard"}:
+        if n_value > 50:
+            adjustments["mustard"] = adjustments.get("mustard", 0.0) + 0.06
+        elif n_value < 35:
+            adjustments["lentil"] = adjustments.get("lentil", 0.0) + 0.06
+        if humidity > 55:
+            adjustments["lentil"] = adjustments.get("lentil", 0.0) + 0.03
+        elif humidity < 45:
+            adjustments["mustard"] = adjustments.get("mustard", 0.0) + 0.03
+    elif top2_names == {"rice", "jute"}:
+        if n_value > 65:
+            adjustments["rice"] = adjustments.get("rice", 0.0) + 0.05
+        elif n_value < 50:
+            adjustments["jute"] = adjustments.get("jute", 0.0) + 0.05
+        if rainfall > 250:
+            adjustments["rice"] = adjustments.get("rice", 0.0) + 0.03
+        if ph_value < 6.0:
+            adjustments["rice"] = adjustments.get("rice", 0.0) + 0.03
+        elif ph_value > 7.0:
+            adjustments["jute"] = adjustments.get("jute", 0.0) + 0.03
+    elif top2_names == {"maize", "cotton"}:
+        if n_value > 70:
+            adjustments["maize"] = adjustments.get("maize", 0.0) + 0.06
+        elif n_value < 55:
+            adjustments["cotton"] = adjustments.get("cotton", 0.0) + 0.06
+        if temperature > 32:
+            adjustments["cotton"] = adjustments.get("cotton", 0.0) + 0.03
+        elif temperature < 26:
+            adjustments["maize"] = adjustments.get("maize", 0.0) + 0.03
+    elif top2_names == {"maize", "wheat"}:
+        if temperature > 25:
+            adjustments["maize"] = adjustments.get("maize", 0.0) + 0.05
+        elif temperature < 20:
+            adjustments["wheat"] = adjustments.get("wheat", 0.0) + 0.05
+        if rainfall > 100:
+            adjustments["maize"] = adjustments.get("maize", 0.0) + 0.03
+        elif rainfall < 60:
+            adjustments["wheat"] = adjustments.get("wheat", 0.0) + 0.03
+    elif top2_names == {"rice", "soybean"}:
+        if n_value > 55:
+            adjustments["rice"] = adjustments.get("rice", 0.0) + 0.05
+        elif n_value < 35:
+            adjustments["soybean"] = adjustments.get("soybean", 0.0) + 0.05
+        if p_value > 60:
+            adjustments["soybean"] = adjustments.get("soybean", 0.0) + 0.03
+
+    for crop_name, adjustment in adjustments.items():
+        idx = np.where(np.char.lower(class_names.astype(str)) == crop_name)[0]
+        if len(idx) > 0:
+            probs[int(idx[0])] = max(0.0, float(probs[int(idx[0])]) + float(adjustment))
+
+    total = float(probs.sum())
+    if total > 0:
+        probs = probs / total
+    return probs
+
+
 def _safe_load_json(path: str) -> dict[str, Any]:
     file_path = Path(path)
     if not file_path.exists():
@@ -146,6 +262,7 @@ def predict_probability_distribution(features: dict[str, Any]) -> list[dict]:
     scaled = scaler.transform(frame)
     probabilities = model.predict_proba(scaled)[0]
     classes = encoder.inverse_transform(np.arange(len(probabilities)))
+    probabilities = apply_confusion_tiebreakers(probabilities, classes, features)
 
     rows = [
         {"crop": str(crop).lower(), "ml_confidence": float(probability)}

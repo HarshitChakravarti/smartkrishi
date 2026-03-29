@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 BASE_FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
@@ -16,6 +17,12 @@ DERIVED_FEATURES = [
     "rain_temp_product",
     "ph_category",
     "moisture_index",
+    "soil_moisture_proxy",
+    "npk_balance",
+    "heat_index",
+    "rain_intensity",
+    "pk_ratio",
+    "n_to_rain",
 ]
 EXTENDED_FEATURES = BASE_FEATURES + DERIVED_FEATURES
 
@@ -50,6 +57,7 @@ def compute_feature_map(base_features: dict[str, Any]) -> dict[str, float]:
     rainfall = normalized["rainfall"]
 
     npk_total = n_value + p_value + k_value
+    npk_balance = float(np.std([n_value, p_value, k_value]))
     if ph_value < 5.5:
         ph_category = 0.0
     elif ph_value < 6.5:
@@ -69,6 +77,12 @@ def compute_feature_map(base_features: dict[str, Any]) -> dict[str, float]:
         "rain_temp_product": rainfall * temperature / 100.0,
         "ph_category": ph_category,
         "moisture_index": (rainfall / 300.0 + humidity / 100.0) / 2.0,
+        "soil_moisture_proxy": (rainfall * humidity) / (temperature + 1.0),
+        "npk_balance": npk_balance,
+        "heat_index": temperature * (1.0 + humidity / 100.0),
+        "rain_intensity": rainfall / (humidity + 1.0),
+        "pk_ratio": p_value / (k_value + 1.0),
+        "n_to_rain": n_value / (rainfall + 1.0),
     }
 
 
@@ -89,4 +103,12 @@ def add_engineered_features(frame: pd.DataFrame) -> pd.DataFrame:
         include_lowest=True,
     ).astype(float)
     engineered["moisture_index"] = (engineered["rainfall"] / 300.0 + engineered["humidity"] / 100.0) / 2.0
+    engineered["soil_moisture_proxy"] = (
+        engineered["rainfall"] * engineered["humidity"]
+    ) / (engineered["temperature"] + 1.0)
+    engineered["npk_balance"] = engineered[["N", "P", "K"]].std(axis=1, ddof=0)
+    engineered["heat_index"] = engineered["temperature"] * (1.0 + engineered["humidity"] / 100.0)
+    engineered["rain_intensity"] = engineered["rainfall"] / (engineered["humidity"] + 1.0)
+    engineered["pk_ratio"] = engineered["P"] / (engineered["K"] + 1.0)
+    engineered["n_to_rain"] = engineered["N"] / (engineered["rainfall"] + 1.0)
     return engineered
