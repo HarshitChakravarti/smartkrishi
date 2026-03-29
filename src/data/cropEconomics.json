@@ -1,0 +1,841 @@
+{
+  "rice": {
+    "displayName": "Rice (Paddy)",
+    "msp": 2320,
+    "wholesalePrice": 2100,
+    "dealerPrice": 1900,
+    "yieldPerHectare": { "min": 35, "max": 55, "avg": 45 },
+    "costPerHectare": 75000,
+    "unit": "quintal",
+    "seedRate": "20-25 kg/ha (transplanted), 80-100 kg/ha (direct seeded)",
+    "spacing": "20x15 cm",
+    "waterRequirement": "1200-1400 mm total",
+    "irrigationMethod": "Flood irrigation with alternate wetting and drying (AWD)",
+    "irrigationSchedule": "Maintain 5cm standing water during tillering and flowering. Drain 10 days before harvest.",
+    "fertilizer": {
+      "n": 120,
+      "p": 60,
+      "k": 40,
+      "unit": "kg/ha",
+      "organic": "5-10 tonnes FYM per hectare before transplanting",
+      "schedule": [
+        { "stage": "Basal (at transplanting)", "n": 40, "p": 60, "k": 40 },
+        { "stage": "First top dress (21 days)", "n": 40, "p": 0, "k": 0 },
+        { "stage": "Second top dress (45 days)", "n": 40, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Stem borer", "prevention": "Use pheromone traps, apply Cartap hydrochloride" },
+      { "name": "Brown plant hopper", "prevention": "Avoid excess nitrogen, use neem-based sprays" },
+      { "name": "Blast disease", "prevention": "Use resistant varieties, apply Tricyclazole" }
+    ],
+    "harvestIndicators": "Grain moisture 20-22%, 80% panicles turned golden, straw is yellow-green",
+    "weatherSensitivity": "Sensitive to cold during flowering (<15C causes sterility). Heavy rain at harvest causes grain discoloration."
+  },
+  "wheat": {
+    "displayName": "Wheat",
+    "msp": 2275,
+    "wholesalePrice": 2100,
+    "dealerPrice": 1950,
+    "yieldPerHectare": { "min": 30, "max": 50, "avg": 40 },
+    "costPerHectare": 55000,
+    "unit": "quintal",
+    "seedRate": "100-125 kg/ha",
+    "spacing": "20-22.5 cm row spacing",
+    "waterRequirement": "400-500 mm total (4-6 irrigations)",
+    "irrigationMethod": "Border or sprinkler irrigation",
+    "irrigationSchedule": "Crown root initiation (21 days), tillering (40 days), jointing (60 days), flowering (80 days), milking (100 days), dough (115 days)",
+    "fertilizer": {
+      "n": 120,
+      "p": 60,
+      "k": 40,
+      "unit": "kg/ha",
+      "organic": "5 tonnes FYM per hectare before sowing",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 60, "p": 60, "k": 40 },
+        { "stage": "First irrigation (21 days)", "n": 30, "p": 0, "k": 0 },
+        { "stage": "Second irrigation (40 days)", "n": 30, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Yellow rust", "prevention": "Use resistant varieties, apply Propiconazole" },
+      { "name": "Aphids", "prevention": "Spray Dimethoate at ear-head emergence" },
+      { "name": "Termites", "prevention": "Seed treatment with Chlorpyriphos" }
+    ],
+    "harvestIndicators": "Golden yellow color, grain hard and cannot be dented by thumbnail, moisture 12-14%",
+    "weatherSensitivity": "Terminal heat stress (>35C in March-April) reduces grain filling. Untimely rain at maturity causes grain shriveling."
+  },
+  "maize": {
+    "displayName": "Maize (Corn)",
+    "msp": 2090,
+    "wholesalePrice": 1850,
+    "dealerPrice": 1700,
+    "yieldPerHectare": { "min": 40, "max": 70, "avg": 55 },
+    "costPerHectare": 50000,
+    "unit": "quintal",
+    "seedRate": "20-25 kg/ha",
+    "spacing": "60x20 cm",
+    "waterRequirement": "500-600 mm total",
+    "irrigationMethod": "Furrow or drip irrigation",
+    "irrigationSchedule": "Critical stages: knee-high (30 days), tasseling (55 days), silking (65 days), grain filling (80 days). Avoid waterlogging.",
+    "fertilizer": {
+      "n": 120,
+      "p": 60,
+      "k": 40,
+      "unit": "kg/ha",
+      "organic": "8-10 tonnes FYM per hectare",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 30, "p": 60, "k": 40 },
+        { "stage": "Knee-high stage (30 days)", "n": 45, "p": 0, "k": 0 },
+        { "stage": "Tasseling (55 days)", "n": 45, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Fall armyworm", "prevention": "Use pheromone traps, spray Emamectin benzoate" },
+      { "name": "Stem borer", "prevention": "Release Trichogramma cards, apply Carbofuran granules" },
+      { "name": "Downy mildew", "prevention": "Seed treatment with Metalaxyl" }
+    ],
+    "harvestIndicators": "Husk turns brown, kernels are hard and glossy, black layer visible at kernel base, moisture 20-25%",
+    "weatherSensitivity": "Drought stress at silking causes poor kernel set. Waterlogging at any stage causes root rot."
+  },
+  "soybean": {
+    "displayName": "Soybean",
+    "msp": 4892,
+    "wholesalePrice": 4500,
+    "dealerPrice": 4200,
+    "yieldPerHectare": { "min": 15, "max": 25, "avg": 20 },
+    "costPerHectare": 42000,
+    "unit": "quintal",
+    "seedRate": "60-75 kg/ha",
+    "spacing": "30-45 x 5-7 cm",
+    "waterRequirement": "400-500 mm total (mostly rainfed)",
+    "irrigationMethod": "Rainfed preferred; supplemental sprinkler if dry spell > 15 days",
+    "irrigationSchedule": "Critical moisture needed at flowering (35-40 days) and pod filling (65-75 days). Avoid waterlogging.",
+    "fertilizer": {
+      "n": 25,
+      "p": 60,
+      "k": 40,
+      "unit": "kg/ha",
+      "organic": "5 tonnes FYM + Rhizobium seed inoculation (essential)",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 25, "p": 60, "k": 40 },
+        { "stage": "No top dress needed", "n": 0, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Girdle beetle", "prevention": "Early sowing, spray Triazophos at 30 days" },
+      { "name": "Stem fly", "prevention": "Seed treatment with Thiamethoxam" },
+      { "name": "Yellow mosaic virus", "prevention": "Use resistant varieties (JS 335, JS 9560), control whitefly vector" }
+    ],
+    "harvestIndicators": "Leaves turn yellow and drop, pods turn brown, seeds rattle in pods, moisture 13-14%",
+    "weatherSensitivity": "Excess rain during pod maturity causes seed deterioration. Drought during flowering reduces pod count by 40-60%."
+  },
+  "mustard": {
+    "displayName": "Mustard (Sarson)",
+    "msp": 5650,
+    "wholesalePrice": 5200,
+    "dealerPrice": 4800,
+    "yieldPerHectare": { "min": 12, "max": 20, "avg": 15 },
+    "costPerHectare": 35000,
+    "unit": "quintal",
+    "seedRate": "3-5 kg/ha",
+    "spacing": "30-45 x 10-15 cm",
+    "waterRequirement": "250-400 mm total (2-3 irrigations)",
+    "irrigationMethod": "Flood or sprinkler; drought tolerant crop",
+    "irrigationSchedule": "First irrigation at 25-30 days (pre-flowering), second at 55-60 days (pod formation). Third only if very dry.",
+    "fertilizer": {
+      "n": 80,
+      "p": 40,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "4-5 tonnes FYM, add Sulphur 20 kg/ha (critical for oil content)",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 40, "p": 40, "k": 20 },
+        { "stage": "First irrigation (30 days)", "n": 40, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Aphids", "prevention": "Spray Dimethoate 30EC when population builds on terminals" },
+      { "name": "Painted bug", "prevention": "Dust Malathion 5% in early morning when bugs are sluggish" },
+      { "name": "White rust / Alternaria", "prevention": "Spray Mancozeb 75WP at first sign of spots" }
+    ],
+    "harvestIndicators": "Pods turn yellow-brown, seeds turn brown-black, moisture 10-12%, siliquae start shattering",
+    "weatherSensitivity": "Frost at flowering stage causes severe damage. Fog increases Alternaria risk. Early heat (>30C in Feb) forces early maturity."
+  },
+  "millet": {
+    "displayName": "Millet (Bajra)",
+    "msp": 2625,
+    "wholesalePrice": 2300,
+    "dealerPrice": 2100,
+    "yieldPerHectare": { "min": 15, "max": 30, "avg": 22 },
+    "costPerHectare": 30000,
+    "unit": "quintal",
+    "seedRate": "4-5 kg/ha",
+    "spacing": "45x15 cm",
+    "waterRequirement": "300-400 mm total (mostly rainfed)",
+    "irrigationMethod": "Rainfed; supplemental irrigation only during prolonged dry spell",
+    "irrigationSchedule": "If irrigated: at tillering (20 days), flowering (40 days), grain filling (55 days). Highly drought tolerant.",
+    "fertilizer": {
+      "n": 60,
+      "p": 30,
+      "k": 30,
+      "unit": "kg/ha",
+      "organic": "4-5 tonnes FYM or compost per hectare",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 30, "p": 30, "k": 30 },
+        { "stage": "Top dress at 25-30 days", "n": 30, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Shoot fly", "prevention": "Early sowing, seed treatment with Imidacloprid" },
+      { "name": "Downy mildew", "prevention": "Seed treatment with Metalaxyl, use resistant hybrids" },
+      { "name": "Ear head worm", "prevention": "Spray Endosulfan at 50% flowering" }
+    ],
+    "harvestIndicators": "Ear heads turn grey-brown, grain hardens, thumbnail test positive, moisture 12-14%",
+    "weatherSensitivity": "Tolerates heat and drought well. Susceptible to waterlogging. Cool temperatures at flowering reduce seed set."
+  },
+  "chickpea": {
+    "displayName": "Chickpea (Chana / Gram)",
+    "msp": 5440,
+    "wholesalePrice": 5000,
+    "dealerPrice": 4600,
+    "yieldPerHectare": { "min": 12, "max": 22, "avg": 16 },
+    "costPerHectare": 35000,
+    "unit": "quintal",
+    "seedRate": "75-100 kg/ha (desi), 100-120 kg/ha (kabuli)",
+    "spacing": "30x10 cm",
+    "waterRequirement": "250-350 mm total (1-2 irrigations)",
+    "irrigationMethod": "Sprinkler or flood; sensitive to excess moisture",
+    "irrigationSchedule": "Pre-sowing irrigation essential. One irrigation at flowering (45-50 days) if no rain. Avoid irrigation at pod maturity.",
+    "fertilizer": {
+      "n": 20,
+      "p": 50,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "Rhizobium seed inoculation + 2-3 tonnes FYM. Being a legume, it fixes its own nitrogen.",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 20, "p": 50, "k": 20 },
+        { "stage": "No top dress needed", "n": 0, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Pod borer (Helicoverpa)", "prevention": "Spray HaNPV or Bt at 50% flowering, use pheromone traps" },
+      { "name": "Wilt (Fusarium)", "prevention": "Use resistant varieties (JG 11, JG 14), seed treatment with Trichoderma" },
+      { "name": "Dry root rot", "prevention": "Avoid moisture stress, treat seed with Carbendazim" }
+    ],
+    "harvestIndicators": "Plants turn yellow, leaves drop, pods turn brown and dry, seeds rattle, moisture 10-12%",
+    "weatherSensitivity": "Excess rain or humidity causes Ascochyta blight. Frost at flowering causes pod abortion. Needs cool dry weather for pod filling."
+  },
+  "cotton": {
+    "displayName": "Cotton (Kapas)",
+    "msp": 7121,
+    "wholesalePrice": 6500,
+    "dealerPrice": 6000,
+    "yieldPerHectare": { "min": 15, "max": 25, "avg": 20 },
+    "costPerHectare": 60000,
+    "unit": "quintal",
+    "seedRate": "2-2.5 kg/ha (Bt hybrid), 12-15 kg/ha (desi)",
+    "spacing": "90-120 x 45-60 cm",
+    "waterRequirement": "700-900 mm total (6-8 irrigations)",
+    "irrigationMethod": "Drip irrigation recommended; furrow irrigation conventional",
+    "irrigationSchedule": "Critical: squaring (45 days), flowering (60-90 days), boll development (90-120 days). Skip irrigation during boll opening.",
+    "fertilizer": {
+      "n": 120,
+      "p": 60,
+      "k": 60,
+      "unit": "kg/ha",
+      "organic": "10 tonnes FYM + neem cake 250 kg/ha",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 30, "p": 60, "k": 60 },
+        { "stage": "Squaring (45 days)", "n": 45, "p": 0, "k": 0 },
+        { "stage": "Flowering (70 days)", "n": 45, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Bollworm", "prevention": "Bt cotton + refuge planting, spray Emamectin at economic threshold" },
+      { "name": "Whitefly", "prevention": "Yellow sticky traps, spray Diafenthiuron" },
+      { "name": "Pink bollworm", "prevention": "Timely sowing, pheromone traps, destroy crop residues" }
+    ],
+    "harvestIndicators": "Bolls burst open fully, cotton is fluffy white, pick in 3-4 rounds, moisture 8-10%",
+    "weatherSensitivity": "Excess rain during boll opening causes staining. High humidity increases pest pressure. Needs warm days and cool nights for fiber quality."
+  },
+  "lentil": {
+    "displayName": "Lentil (Masoor)",
+    "msp": 6425,
+    "wholesalePrice": 5800,
+    "dealerPrice": 5400,
+    "yieldPerHectare": { "min": 10, "max": 18, "avg": 13 },
+    "costPerHectare": 30000,
+    "unit": "quintal",
+    "seedRate": "30-40 kg/ha",
+    "spacing": "25-30 x 5-7 cm",
+    "waterRequirement": "250-350 mm total (1-2 irrigations or rainfed)",
+    "irrigationMethod": "Light sprinkler or rainfed in most areas",
+    "irrigationSchedule": "Pre-sowing irrigation, one at branching (35-40 days) if dry. Excess moisture causes root rot.",
+    "fertilizer": {
+      "n": 20,
+      "p": 40,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "Rhizobium inoculation + 2 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 20, "p": 40, "k": 20 }
+      ]
+    },
+    "pests": [
+      { "name": "Rust", "prevention": "Spray Mancozeb at first symptoms, use resistant varieties" },
+      { "name": "Wilt", "prevention": "Seed treatment with Thiram + Carbendazim" },
+      { "name": "Aphids", "prevention": "Spray Dimethoate when colonies appear on terminals" }
+    ],
+    "harvestIndicators": "Plants turn golden-brown, pods dry out, seeds harden, moisture 10-12%",
+    "weatherSensitivity": "Excess moisture causes rust and root rot. Needs cool, dry post-flowering weather. Frost at flowering damages pods."
+  },
+  "jute": {
+    "displayName": "Jute",
+    "msp": 5050,
+    "wholesalePrice": 4600,
+    "dealerPrice": 4200,
+    "yieldPerHectare": { "min": 20, "max": 35, "avg": 25 },
+    "costPerHectare": 45000,
+    "unit": "quintal",
+    "seedRate": "6-8 kg/ha",
+    "spacing": "25-30 x 5-7 cm",
+    "waterRequirement": "500-600 mm during growing season",
+    "irrigationMethod": "Mostly rainfed (monsoon crop); field should not waterlog",
+    "irrigationSchedule": "Depends on monsoon. If dry spell > 10 days in July-August, provide one irrigation.",
+    "fertilizer": {
+      "n": 60,
+      "p": 30,
+      "k": 30,
+      "unit": "kg/ha",
+      "organic": "5 tonnes FYM per hectare",
+      "schedule": [
+        { "stage": "Basal", "n": 20, "p": 30, "k": 30 },
+        { "stage": "Top dress at 30 days", "n": 20, "p": 0, "k": 0 },
+        { "stage": "Top dress at 60 days", "n": 20, "p": 0, "k": 0 }
+      ]
+    },
+    "pests": [
+      { "name": "Stem weevil", "prevention": "Clean cultivation, spray Malathion" },
+      { "name": "Yellow mite", "prevention": "Spray wettable Sulphur" },
+      { "name": "Stem rot", "prevention": "Avoid waterlogging, treat seed with Carbendazim" }
+    ],
+    "harvestIndicators": "Harvest at small pod stage (120-140 days), stem starts browning at base, flowers are falling",
+    "weatherSensitivity": "Needs consistent monsoon moisture. Drought causes fiber quality decline. Excess waterlogging causes root rot."
+  },
+  "mungbean": {
+    "displayName": "Mung Bean (Moong)",
+    "msp": 8558,
+    "wholesalePrice": 7500,
+    "dealerPrice": 7000,
+    "yieldPerHectare": { "min": 8, "max": 15, "avg": 10 },
+    "costPerHectare": 28000,
+    "unit": "quintal",
+    "seedRate": "15-20 kg/ha",
+    "spacing": "30x10 cm",
+    "waterRequirement": "250-300 mm (short duration crop)",
+    "irrigationMethod": "Light irrigation or rainfed",
+    "irrigationSchedule": "One irrigation at flowering if no rain. Avoid excess moisture.",
+    "fertilizer": {
+      "n": 20,
+      "p": 40,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "Rhizobium inoculation + 2 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal (at sowing)", "n": 20, "p": 40, "k": 20 }
+      ]
+    },
+    "pests": [
+      { "name": "Yellow mosaic virus", "prevention": "Use resistant varieties, control whitefly" },
+      { "name": "Pod borer", "prevention": "Spray neem-based pesticide at flowering" },
+      { "name": "Cercospora leaf spot", "prevention": "Spray Carbendazim" }
+    ],
+    "harvestIndicators": "Pods turn black/brown, pick in 2-3 rounds as pods mature unevenly",
+    "weatherSensitivity": "Excess rain at maturity causes sprouting in pods. Needs warm humid weather for vegetative growth."
+  },
+  "blackgram": {
+    "displayName": "Black Gram (Urad)",
+    "msp": 6950,
+    "wholesalePrice": 6200,
+    "dealerPrice": 5800,
+    "yieldPerHectare": { "min": 8, "max": 14, "avg": 10 },
+    "costPerHectare": 28000,
+    "unit": "quintal",
+    "seedRate": "15-20 kg/ha",
+    "spacing": "30x10 cm",
+    "waterRequirement": "300-350 mm",
+    "irrigationMethod": "Light sprinkler or rainfed",
+    "irrigationSchedule": "Similar to mungbean - one irrigation at flowering if needed",
+    "fertilizer": {
+      "n": 20,
+      "p": 40,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "Rhizobium + 2 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal", "n": 20, "p": 40, "k": 20 }
+      ]
+    },
+    "pests": [
+      { "name": "Stem fly", "prevention": "Seed treatment with Thiamethoxam" },
+      { "name": "Yellow mosaic", "prevention": "Resistant varieties, whitefly control" },
+      { "name": "Powdery mildew", "prevention": "Spray wettable Sulphur" }
+    ],
+    "harvestIndicators": "Pods turn black, harvest when 80% pods are mature",
+    "weatherSensitivity": "Excess moisture at harvest causes seed discoloration. Drought at flowering reduces yield."
+  },
+  "pigeonpeas": {
+    "displayName": "Pigeon Pea (Arhar / Tur)",
+    "msp": 7000,
+    "wholesalePrice": 6500,
+    "dealerPrice": 6000,
+    "yieldPerHectare": { "min": 10, "max": 20, "avg": 15 },
+    "costPerHectare": 35000,
+    "unit": "quintal",
+    "seedRate": "12-15 kg/ha",
+    "spacing": "60-75 x 20-25 cm",
+    "waterRequirement": "350-450 mm",
+    "irrigationMethod": "Rainfed or furrow irrigation",
+    "irrigationSchedule": "One irrigation at flowering, one at pod filling if dry",
+    "fertilizer": {
+      "n": 20,
+      "p": 50,
+      "k": 20,
+      "unit": "kg/ha",
+      "organic": "Rhizobium inoculation + 3 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal", "n": 20, "p": 50, "k": 20 }
+      ]
+    },
+    "pests": [
+      { "name": "Pod borer (Helicoverpa)", "prevention": "HaNPV spray, Bt, neem-based pesticide" },
+      { "name": "Pod fly", "prevention": "Early harvest of mature pods" },
+      { "name": "Wilt (Fusarium)", "prevention": "Resistant varieties, seed treatment with Trichoderma" }
+    ],
+    "harvestIndicators": "Pods turn brown and dry, seeds harden, moisture 10-12%",
+    "weatherSensitivity": "Waterlogging at any stage is fatal. Needs well-drained soil. Frost damages flowers."
+  },
+  "mothbeans": {
+    "displayName": "Moth Bean",
+    "msp": 8558,
+    "wholesalePrice": 7000,
+    "dealerPrice": 6500,
+    "yieldPerHectare": { "min": 4, "max": 8, "avg": 6 },
+    "costPerHectare": 18000,
+    "unit": "quintal",
+    "seedRate": "12-15 kg/ha",
+    "spacing": "30x10 cm",
+    "waterRequirement": "150-250 mm (highly drought tolerant)",
+    "irrigationMethod": "Rainfed - does not need irrigation",
+    "irrigationSchedule": "Completely rainfed in most areas. One protective irrigation only in extreme drought.",
+    "fertilizer": {
+      "n": 15,
+      "p": 30,
+      "k": 15,
+      "unit": "kg/ha",
+      "organic": "Rhizobium + 2 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal", "n": 15, "p": 30, "k": 15 }
+      ]
+    },
+    "pests": [
+      { "name": "Jassids", "prevention": "Spray Dimethoate" },
+      { "name": "Pod borer", "prevention": "Neem-based spray at flowering" },
+      { "name": "Yellow mosaic", "prevention": "Resistant varieties" }
+    ],
+    "harvestIndicators": "Pods turn brown, plant dries out, harvest at full maturity",
+    "weatherSensitivity": "Extremely drought tolerant. Cannot tolerate waterlogging. Best suited for arid regions."
+  },
+  "kidneybeans": {
+    "displayName": "Kidney Beans (Rajma)",
+    "msp": 0,
+    "wholesalePrice": 8000,
+    "dealerPrice": 7500,
+    "yieldPerHectare": { "min": 10, "max": 18, "avg": 14 },
+    "costPerHectare": 40000,
+    "unit": "quintal",
+    "seedRate": "80-120 kg/ha",
+    "spacing": "40-50 x 10-15 cm",
+    "waterRequirement": "350-450 mm",
+    "irrigationMethod": "Sprinkler or furrow, grown in hill areas with natural moisture",
+    "irrigationSchedule": "Flowering and pod filling are critical. 3-4 irrigations if no rain.",
+    "fertilizer": {
+      "n": 40,
+      "p": 60,
+      "k": 30,
+      "unit": "kg/ha",
+      "organic": "Rhizobium + 5 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal", "n": 40, "p": 60, "k": 30 }
+      ]
+    },
+    "pests": [
+      { "name": "Anthracnose", "prevention": "Use disease-free seed, spray Mancozeb" },
+      { "name": "Root rot", "prevention": "Avoid waterlogging, treat seed with Thiram" },
+      { "name": "White fly", "prevention": "Yellow sticky traps, neem spray" }
+    ],
+    "harvestIndicators": "Pods turn yellow and dry, seeds rattle inside, moisture 12-14%",
+    "weatherSensitivity": "Prefers cool climates (15-25C). Cannot tolerate frost or extreme heat. Grown mainly in hills."
+  },
+  "banana": {
+    "displayName": "Banana",
+    "msp": 0,
+    "wholesalePrice": 1200,
+    "dealerPrice": 1000,
+    "yieldPerHectare": { "min": 300, "max": 600, "avg": 450 },
+    "costPerHectare": 150000,
+    "unit": "quintal",
+    "seedRate": "1600-2500 suckers/ha (tissue culture: 2500-3000/ha)",
+    "spacing": "1.8x1.8 m or 2x2 m",
+    "waterRequirement": "1800-2200 mm per year",
+    "irrigationMethod": "Drip irrigation strongly recommended",
+    "irrigationSchedule": "Daily drip: 10-15 liters/plant/day in summer, 6-8 in winter. Never allow moisture stress.",
+    "fertilizer": {
+      "n": 200,
+      "p": 60,
+      "k": 300,
+      "unit": "g/plant/year",
+      "organic": "10 kg FYM per pit + neem cake 1 kg per plant",
+      "schedule": [
+        { "stage": "At planting", "n": 50, "p": 60, "k": 75 },
+        { "stage": "2 months", "n": 50, "p": 0, "k": 75 },
+        { "stage": "4 months", "n": 50, "p": 0, "k": 75 },
+        { "stage": "6 months", "n": 50, "p": 0, "k": 75 }
+      ]
+    },
+    "pests": [
+      { "name": "Panama wilt (Fusarium)", "prevention": "Use tissue culture plants, bio-agents" },
+      { "name": "Sigatoka leaf spot", "prevention": "Remove affected leaves, spray Propiconazole" },
+      { "name": "Banana bunchy top virus", "prevention": "Use virus-free planting material, control aphid vector" }
+    ],
+    "harvestIndicators": "Fingers become round (not angular), light green color, 75-80% maturity, 12-14 months from planting",
+    "weatherSensitivity": "Wind damage at fruiting. Frost kills plants. Needs consistently warm and humid conditions."
+  },
+  "mango": {
+    "displayName": "Mango",
+    "msp": 0,
+    "wholesalePrice": 3000,
+    "dealerPrice": 2500,
+    "yieldPerHectare": { "min": 80, "max": 150, "avg": 100 },
+    "costPerHectare": 80000,
+    "unit": "quintal",
+    "seedRate": "100-120 grafts/ha",
+    "spacing": "10x10 m (traditional), 5x5 m (high density)",
+    "waterRequirement": "Minimal during winter; 50-60 liters/tree/week in summer",
+    "irrigationMethod": "Basin or drip irrigation for young trees",
+    "irrigationSchedule": "No irrigation during flowering (Jan-Feb). Resume after fruit set. Regular watering during fruit development (March-May).",
+    "fertilizer": {
+      "n": 1000,
+      "p": 500,
+      "k": 1000,
+      "unit": "g/tree/year (bearing tree)",
+      "organic": "20-25 kg FYM per tree per year",
+      "schedule": [
+        { "stage": "Post harvest (July)", "n": 500, "p": 250, "k": 500 },
+        { "stage": "Pre-flowering (October)", "n": 500, "p": 250, "k": 500 }
+      ]
+    },
+    "pests": [
+      { "name": "Mango hopper", "prevention": "Spray Imidacloprid at panicle emergence" },
+      { "name": "Anthracnose", "prevention": "Spray Carbendazim before and after flowering" },
+      { "name": "Fruit fly", "prevention": "Methyl eugenol traps, harvest at mature green stage" }
+    ],
+    "harvestIndicators": "Fruit shoulder develops, color turns from dark to light green, specific gravity test (fruit sinks in water)",
+    "weatherSensitivity": "Rain during flowering causes major crop loss. Dry period Nov-Feb is critical for good flowering. Hailstorms damage fruit."
+  },
+  "grapes": {
+    "displayName": "Grapes",
+    "msp": 0,
+    "wholesalePrice": 4000,
+    "dealerPrice": 3500,
+    "yieldPerHectare": { "min": 150, "max": 300, "avg": 200 },
+    "costPerHectare": 250000,
+    "unit": "quintal",
+    "seedRate": "1600-2200 vines/ha",
+    "spacing": "3x2 m (Y-trellis), 3x1.5 m (flat)",
+    "waterRequirement": "600-800 mm per year through drip",
+    "irrigationMethod": "Drip irrigation mandatory",
+    "irrigationSchedule": "Daily drip adjusted by growth stage. Reduce water 15 days before harvest for sugar concentration.",
+    "fertilizer": {
+      "n": 500,
+      "p": 300,
+      "k": 500,
+      "unit": "g/vine/year",
+      "organic": "15-20 kg FYM per vine per year",
+      "schedule": [
+        { "stage": "After pruning", "n": 200, "p": 150, "k": 200 },
+        { "stage": "At berry set", "n": 150, "p": 75, "k": 150 },
+        { "stage": "At veraison", "n": 150, "p": 75, "k": 150 }
+      ]
+    },
+    "pests": [
+      { "name": "Downy mildew", "prevention": "Spray Mancozeb + Metalaxyl" },
+      { "name": "Powdery mildew", "prevention": "Sulphur dust or Hexaconazole spray" },
+      { "name": "Thrips", "prevention": "Spray Fipronil at flowering" }
+    ],
+    "harvestIndicators": "TSS 18-22 Brix, berry color fully developed, berries detach easily from pedicel",
+    "weatherSensitivity": "Rain during ripening causes berry cracking. Needs hot dry days for sugar accumulation. High humidity causes mildew."
+  },
+  "apple": {
+    "displayName": "Apple",
+    "msp": 0,
+    "wholesalePrice": 6000,
+    "dealerPrice": 5000,
+    "yieldPerHectare": { "min": 80, "max": 200, "avg": 120 },
+    "costPerHectare": 200000,
+    "unit": "quintal",
+    "seedRate": "200-400 trees/ha",
+    "spacing": "6x6 m (traditional), 3x1 m (high density)",
+    "waterRequirement": "800-1000 mm per year",
+    "irrigationMethod": "Drip irrigation preferred in modern orchards",
+    "irrigationSchedule": "Regular irrigation April-September. Critical during fruit development (May-July). Reduce before harvest.",
+    "fertilizer": {
+      "n": 700,
+      "p": 350,
+      "k": 700,
+      "unit": "g/tree/year (bearing)",
+      "organic": "20-30 kg FYM per tree",
+      "schedule": [
+        { "stage": "February (before bloom)", "n": 350, "p": 175, "k": 350 },
+        { "stage": "June (fruit development)", "n": 350, "p": 175, "k": 350 }
+      ]
+    },
+    "pests": [
+      { "name": "Codling moth", "prevention": "Pheromone traps, spray Chlorantraniliprole" },
+      { "name": "Apple scab", "prevention": "Spray Mancozeb at green tip to petal fall" },
+      { "name": "Woolly aphid", "prevention": "Release parasitoid Aphelinus mali" }
+    ],
+    "harvestIndicators": "Seed color turns brown, flesh is crisp, starch-iodine test, ground color changes from green to yellow",
+    "weatherSensitivity": "Needs 1000-1500 chilling hours. Hailstorms damage fruit. Unseasonal warm winters reduce fruit set."
+  },
+  "orange": {
+    "displayName": "Orange (Citrus)",
+    "msp": 0,
+    "wholesalePrice": 3500,
+    "dealerPrice": 3000,
+    "yieldPerHectare": { "min": 100, "max": 200, "avg": 150 },
+    "costPerHectare": 120000,
+    "unit": "quintal",
+    "seedRate": "400-500 plants/ha",
+    "spacing": "5x5 m or 6x6 m",
+    "waterRequirement": "900-1200 mm per year",
+    "irrigationMethod": "Drip or basin irrigation",
+    "irrigationSchedule": "Withhold water in Jan-Feb to induce flowering. Resume at fruit set. Regular watering during fruit development.",
+    "fertilizer": {
+      "n": 600,
+      "p": 300,
+      "k": 600,
+      "unit": "g/tree/year",
+      "organic": "20 kg FYM per tree per year",
+      "schedule": [
+        { "stage": "June (post-monsoon)", "n": 200, "p": 150, "k": 200 },
+        { "stage": "September", "n": 200, "p": 75, "k": 200 },
+        { "stage": "December", "n": 200, "p": 75, "k": 200 }
+      ]
+    },
+    "pests": [
+      { "name": "Citrus psylla", "prevention": "Spray Imidacloprid, avoid dense planting" },
+      { "name": "Citrus canker", "prevention": "Copper-based spray, remove infected twigs" },
+      { "name": "Fruit sucking moth", "prevention": "Light traps, early morning collection" }
+    ],
+    "harvestIndicators": "Fruit turns orange, juice content > 40%, TSS:acid ratio 10-12:1",
+    "weatherSensitivity": "Drought stress needed to trigger flowering. Excess rain during flowering causes fruit drop. Hot dry winds cause fruit drop."
+  },
+  "papaya": {
+    "displayName": "Papaya",
+    "msp": 0,
+    "wholesalePrice": 1500,
+    "dealerPrice": 1200,
+    "yieldPerHectare": { "min": 400, "max": 800, "avg": 600 },
+    "costPerHectare": 100000,
+    "unit": "quintal",
+    "seedRate": "2500-3000 plants/ha",
+    "spacing": "2x2 m or 1.8x1.8 m",
+    "waterRequirement": "1500-2000 mm per year",
+    "irrigationMethod": "Drip irrigation recommended",
+    "irrigationSchedule": "Regular watering every 3-4 days. Never allow waterlogging. Reduce in winter.",
+    "fertilizer": {
+      "n": 250,
+      "p": 250,
+      "k": 500,
+      "unit": "g/plant/year",
+      "organic": "10 kg FYM per pit",
+      "schedule": [
+        { "stage": "At planting", "n": 50, "p": 125, "k": 100 },
+        { "stage": "3 months", "n": 100, "p": 65, "k": 200 },
+        { "stage": "6 months", "n": 100, "p": 60, "k": 200 }
+      ]
+    },
+    "pests": [
+      { "name": "Papaya ring spot virus", "prevention": "Use tolerant varieties, remove infected plants immediately" },
+      { "name": "Mealybug", "prevention": "Spray neem oil, release ladybird beetles" },
+      { "name": "Stem rot", "prevention": "Avoid waterlogging, drench with Copper oxychloride" }
+    ],
+    "harvestIndicators": "Fruit shows yellow streaks, latex turns watery (not milky), slight softening at blossom end",
+    "weatherSensitivity": "Frost kills plants. Cannot tolerate waterlogging. Needs warm weather year-round. Wind damage common."
+  },
+  "coconut": {
+    "displayName": "Coconut",
+    "msp": 0,
+    "wholesalePrice": 2500,
+    "dealerPrice": 2000,
+    "yieldPerHectare": { "min": 80, "max": 150, "avg": 100 },
+    "costPerHectare": 60000,
+    "unit": "nuts (x100)",
+    "seedRate": "175 palms/ha",
+    "spacing": "7.5x7.5 m (triangular)",
+    "waterRequirement": "1500-2500 mm per year",
+    "irrigationMethod": "Basin or drip + mulching",
+    "irrigationSchedule": "Weekly irrigation in summer (40-50 liters/palm). Monsoon season usually sufficient. Mulch basins.",
+    "fertilizer": {
+      "n": 500,
+      "p": 320,
+      "k": 1200,
+      "unit": "g/palm/year",
+      "organic": "25 kg FYM + 5 kg neem cake per palm",
+      "schedule": [
+        { "stage": "Pre-monsoon (May-June)", "n": 250, "p": 160, "k": 600 },
+        { "stage": "Post-monsoon (Sep-Oct)", "n": 250, "p": 160, "k": 600 }
+      ]
+    },
+    "pests": [
+      { "name": "Rhinoceros beetle", "prevention": "Fill leaf axils with neem + sand mixture" },
+      { "name": "Red palm weevil", "prevention": "Avoid trunk injuries, inject Monocrotophos into bore holes" },
+      { "name": "Bud rot", "prevention": "Pour Bordeaux mixture into crown during monsoon" }
+    ],
+    "harvestIndicators": "Nuts at 11-12 months age, husk turns brown, water sound when shaken, harvest every 45 days",
+    "weatherSensitivity": "Needs consistent warmth and moisture. Long droughts reduce nut size. Cyclonic winds break fronds and cause nut fall."
+  },
+  "coffee": {
+    "displayName": "Coffee",
+    "msp": 0,
+    "wholesalePrice": 45000,
+    "dealerPrice": 40000,
+    "yieldPerHectare": { "min": 8, "max": 15, "avg": 10 },
+    "costPerHectare": 120000,
+    "unit": "quintal (clean coffee)",
+    "seedRate": "1600-2500 plants/ha (Arabica), 1000-1500 (Robusta)",
+    "spacing": "2x2 m (Arabica), 3x3 m (Robusta)",
+    "waterRequirement": "1500-2500 mm per year",
+    "irrigationMethod": "Sprinkler or drip under shade trees",
+    "irrigationSchedule": "Blossom showers trigger flowering (March-April). Backing showers set fruit. Regular irrigation during fruit development.",
+    "fertilizer": {
+      "n": 160,
+      "p": 120,
+      "k": 160,
+      "unit": "kg/ha",
+      "organic": "5 tonnes compost per hectare",
+      "schedule": [
+        { "stage": "Pre-blossom (March)", "n": 40, "p": 60, "k": 40 },
+        { "stage": "Post-blossom (May)", "n": 60, "p": 30, "k": 60 },
+        { "stage": "Pre-monsoon (August)", "n": 60, "p": 30, "k": 60 }
+      ]
+    },
+    "pests": [
+      { "name": "Coffee berry borer", "prevention": "Spray Beauveria bassiana, strip-pick ripe berries" },
+      { "name": "White stem borer", "prevention": "Swab trunks with Chlorpyriphos, remove affected branches" },
+      { "name": "Leaf rust (Hemileia)", "prevention": "Spray Bordeaux mixture, use resistant varieties" }
+    ],
+    "harvestIndicators": "Berries turn bright red (cherry stage), pick only ripe red cherries for quality",
+    "weatherSensitivity": "Needs shade. Frost kills plants. Excess sun causes leaf scorch. Erratic rain disrupts flowering synchronization."
+  },
+  "pomegranate": {
+    "displayName": "Pomegranate",
+    "msp": 0,
+    "wholesalePrice": 5000,
+    "dealerPrice": 4500,
+    "yieldPerHectare": { "min": 80, "max": 150, "avg": 120 },
+    "costPerHectare": 150000,
+    "unit": "quintal",
+    "seedRate": "500-625 plants/ha",
+    "spacing": "4x3 m or 5x3 m",
+    "waterRequirement": "500-700 mm per year (drought tolerant)",
+    "irrigationMethod": "Drip irrigation strongly recommended",
+    "irrigationSchedule": "Withhold water for 2 months to induce stress (bahar treatment). Resume at new flush. Regular drip during fruit development.",
+    "fertilizer": {
+      "n": 500,
+      "p": 250,
+      "k": 500,
+      "unit": "g/plant/year",
+      "organic": "20 kg FYM + 2 kg neem cake per plant",
+      "schedule": [
+        { "stage": "After bahar treatment", "n": 250, "p": 125, "k": 250 },
+        { "stage": "At fruit development", "n": 250, "p": 125, "k": 250 }
+      ]
+    },
+    "pests": [
+      { "name": "Bacterial blight (Oily spot)", "prevention": "Spray Streptocycline + Copper oxychloride, prune affected parts" },
+      { "name": "Fruit borer", "prevention": "Bag fruits, spray Profenophos" },
+      { "name": "Wilt", "prevention": "Drench with Carbendazim, avoid waterlogging" }
+    ],
+    "harvestIndicators": "Skin turns red/pink, calyx closes, metallic sound when tapped, 5-6 months from flowering",
+    "weatherSensitivity": "Heavy rain during fruiting causes cracking. Hailstorms damage fruit skin. Needs dry period for bahar regulation."
+  },
+  "watermelon": {
+    "displayName": "Watermelon",
+    "msp": 0,
+    "wholesalePrice": 800,
+    "dealerPrice": 600,
+    "yieldPerHectare": { "min": 250, "max": 500, "avg": 350 },
+    "costPerHectare": 80000,
+    "unit": "quintal",
+    "seedRate": "3-5 kg/ha",
+    "spacing": "3x1.5 m",
+    "waterRequirement": "400-600 mm",
+    "irrigationMethod": "Drip or furrow irrigation",
+    "irrigationSchedule": "Regular watering every 4-5 days. Reduce 1 week before harvest to concentrate sugars. Avoid wetting foliage.",
+    "fertilizer": {
+      "n": 100,
+      "p": 50,
+      "k": 80,
+      "unit": "kg/ha",
+      "organic": "15 tonnes FYM per hectare",
+      "schedule": [
+        { "stage": "Basal (in pits)", "n": 30, "p": 50, "k": 40 },
+        { "stage": "Vine running (25 days)", "n": 35, "p": 0, "k": 20 },
+        { "stage": "Fruiting (45 days)", "n": 35, "p": 0, "k": 20 }
+      ]
+    },
+    "pests": [
+      { "name": "Fruit fly", "prevention": "Cue-lure traps, spray Malathion + jaggery bait" },
+      { "name": "Downy mildew", "prevention": "Spray Mancozeb, avoid overhead irrigation" },
+      { "name": "Aphids", "prevention": "Spray Imidacloprid at early infestation" }
+    ],
+    "harvestIndicators": "Tendril nearest fruit dries, ground spot turns yellow, hollow sound when tapped, 75-90 days from sowing",
+    "weatherSensitivity": "Cannot tolerate frost. Needs hot sunny days for sweetness. Excess rain causes root rot and reduces sugar."
+  },
+  "muskmelon": {
+    "displayName": "Muskmelon (Kharbooja)",
+    "msp": 0,
+    "wholesalePrice": 1200,
+    "dealerPrice": 1000,
+    "yieldPerHectare": { "min": 150, "max": 300, "avg": 200 },
+    "costPerHectare": 70000,
+    "unit": "quintal",
+    "seedRate": "2-3 kg/ha",
+    "spacing": "2.5x0.6 m",
+    "waterRequirement": "300-450 mm",
+    "irrigationMethod": "Drip irrigation preferred",
+    "irrigationSchedule": "Frequent light irrigation. Reduce water at fruit maturity for flavor. Avoid waterlogging.",
+    "fertilizer": {
+      "n": 80,
+      "p": 60,
+      "k": 50,
+      "unit": "kg/ha",
+      "organic": "10-15 tonnes FYM",
+      "schedule": [
+        { "stage": "Basal", "n": 25, "p": 60, "k": 25 },
+        { "stage": "Vine running (25 days)", "n": 30, "p": 0, "k": 15 },
+        { "stage": "Fruiting (45 days)", "n": 25, "p": 0, "k": 10 }
+      ]
+    },
+    "pests": [
+      { "name": "Fruit fly", "prevention": "Cue-lure traps, bait spray" },
+      { "name": "Powdery mildew", "prevention": "Spray wettable Sulphur or Hexaconazole" },
+      { "name": "Red pumpkin beetle", "prevention": "Dust Carbaryl on seedlings" }
+    ],
+    "harvestIndicators": "Fruit develops aroma, changes color, slight softening at blossom end, netting fully developed, slip stage (detaches easily from vine)",
+    "weatherSensitivity": "Needs hot dry weather for sweetness. Excess humidity causes powdery mildew. Cannot tolerate waterlogging."
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "rice": {
+    "displayName": "Rice (Paddy)",
+    "overview": "Rice is India's staple cereal and a high-water crop suited to humid conditions.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "November-December (limited)", "zaid": "March-April (irrigated pockets)" },
+    "soilPreference": "Clay loam to loam with good puddling ability, pH 5.5-7.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "State MSP procurement"],
+    "intercroppingOptions": ["Rice-fish systems", "Rice-green manure rotation"]
+  },
+  "wheat": {
+    "displayName": "Wheat",
+    "overview": "Major rabi cereal requiring cool growth period and dry maturity phase.",
+    "sowingWindow": { "kharif": "Not typical", "rabi": "October-November", "zaid": "Not typical" },
+    "soilPreference": "Well-drained loam to clay loam, pH 6.5-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "MSP procurement"],
+    "intercroppingOptions": ["Wheat + mustard border", "Wheat + chickpea strip"]
+  },
+  "maize": {
+    "displayName": "Maize",
+    "overview": "Versatile cereal grown in kharif, rabi and spring windows based on irrigation.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "October-November", "zaid": "January-February" },
+    "soilPreference": "Well-drained fertile loam, pH 5.5-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Maize + pigeonpea", "Maize + soybean"]
+  },
+  "soybean": {
+    "displayName": "Soybean",
+    "overview": "Important oilseed and protein crop for monsoon season with moderate water demand.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "Not typical", "zaid": "Limited" },
+    "soilPreference": "Well-drained medium black soils, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Oilseed mission support"],
+    "intercroppingOptions": ["Soybean + pigeonpea", "Soybean + maize"]
+  },
+  "mustard": {
+    "displayName": "Mustard (Sarson)",
+    "overview": "Cool-season oilseed crop known for good returns in dry rabi conditions.",
+    "sowingWindow": { "kharif": "Not typical", "rabi": "October-November", "zaid": "Not typical" },
+    "soilPreference": "Well-drained loam to sandy loam, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Oilseed MSP procurement"],
+    "intercroppingOptions": ["Mustard + chickpea", "Mustard + lentil"]
+  },
+  "millet": {
+    "displayName": "Millet (Bajra)",
+    "overview": "Drought-tolerant coarse cereal suitable for low-rainfall regions.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "Limited", "zaid": "February-March (irrigated)" },
+    "soilPreference": "Light to medium soils with good drainage, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Millet mission"],
+    "intercroppingOptions": ["Millet + mothbean", "Millet + pigeonpea"]
+  },
+  "chickpea": {
+    "displayName": "Chickpea",
+    "overview": "Major rabi pulse that improves soil fertility through biological nitrogen fixation.",
+    "sowingWindow": { "kharif": "Not typical", "rabi": "October-November", "zaid": "Not typical" },
+    "soilPreference": "Well-drained loam to clay loam, pH 6.0-8.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Pulse MSP procurement"],
+    "intercroppingOptions": ["Chickpea + mustard", "Chickpea + linseed"]
+  },
+  "cotton": {
+    "displayName": "Cotton",
+    "overview": "Cash fiber crop requiring warm climate and balanced irrigation through long duration.",
+    "sowingWindow": { "kharif": "May-July", "rabi": "Not typical", "zaid": "Not typical" },
+    "soilPreference": "Deep black soils with good moisture retention, pH 6.0-8.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Cotton procurement support"],
+    "intercroppingOptions": ["Cotton + green gram", "Cotton + black gram"]
+  },
+  "lentil": {
+    "displayName": "Lentil (Masoor)",
+    "overview": "Rabi pulse suited to cool weather and low to moderate irrigation.",
+    "sowingWindow": { "kharif": "Not typical", "rabi": "October-November", "zaid": "Not typical" },
+    "soilPreference": "Loam to clay loam soils, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Pulse MSP procurement"],
+    "intercroppingOptions": ["Lentil + mustard", "Lentil + linseed"]
+  },
+  "jute": {
+    "displayName": "Jute",
+    "overview": "Monsoon fiber crop thriving in warm, humid alluvial plains.",
+    "sowingWindow": { "kharif": "April-June", "rabi": "Not typical", "zaid": "Not typical" },
+    "soilPreference": "Alluvial loam with good drainage, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Jute + rice rotation", "Jute + vegetables rotation"]
+  },
+  "mungbean": {
+    "displayName": "Mung Bean (Moong)",
+    "overview": "Short-duration pulse suitable for multiple windows and catch cropping.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "January-February (south)", "zaid": "March-April" },
+    "soilPreference": "Well-drained loam, pH 6.2-7.2",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Pulse MSP procurement"],
+    "intercroppingOptions": ["Moong + maize", "Moong + sugarcane"]
+  },
+  "blackgram": {
+    "displayName": "Black Gram (Urad)",
+    "overview": "Pulse crop grown in kharif and summer, valued for dal and soil health.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "Limited", "zaid": "March-April" },
+    "soilPreference": "Loam to clay loam with drainage, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Pulse MSP procurement"],
+    "intercroppingOptions": ["Urad + maize", "Urad + cotton"]
+  },
+  "pigeonpeas": {
+    "displayName": "Pigeon Pea (Arhar)",
+    "overview": "Long-duration pulse with strong drought resilience and deep root system.",
+    "sowingWindow": { "kharif": "June-July", "rabi": "Not typical", "zaid": "Not typical" },
+    "soilPreference": "Well-drained medium to deep soils, pH 6.0-8.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Pulse MSP procurement"],
+    "intercroppingOptions": ["Pigeonpea + soybean", "Pigeonpea + sorghum"]
+  },
+  "mothbeans": {
+    "displayName": "Moth Bean",
+    "overview": "Arid pulse crop adapted to low rainfall and poor soils.",
+    "sowingWindow": { "kharif": "July-August", "rabi": "Not typical", "zaid": "Limited" },
+    "soilPreference": "Sandy to sandy loam, pH 6.0-8.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Mothbean + bajra", "Mothbean + sesame"]
+  },
+  "kidneybeans": {
+    "displayName": "Kidney Beans (Rajma)",
+    "overview": "Cool-season pulse grown in hills and temperate belts with high market value.",
+    "sowingWindow": { "kharif": "May-June (hills)", "rabi": "October-November (plains pockets)", "zaid": "Not typical" },
+    "soilPreference": "Well-drained fertile loam, pH 6.0-7.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Rajma + maize", "Rajma + potato"]
+  },
+  "banana": {
+    "displayName": "Banana",
+    "overview": "Perennial tropical fruit crop with year-round management and high biomass demand.",
+    "sowingWindow": { "kharif": "June-August", "rabi": "September-November", "zaid": "January-March" },
+    "soilPreference": "Deep fertile loam with drainage, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture mission"],
+    "intercroppingOptions": ["Banana + vegetables (early stage)", "Banana + legumes cover crop"]
+  },
+  "mango": {
+    "displayName": "Mango",
+    "overview": "Flagship Indian fruit tree requiring long-term orchard planning and canopy care.",
+    "sowingWindow": { "kharif": "June-August (planting)", "rabi": "September-November (planting)", "zaid": "Not typical" },
+    "soilPreference": "Well-drained deep loam, pH 5.5-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "MIDH horticulture support"],
+    "intercroppingOptions": ["Mango + pulses (young orchards)", "Mango + vegetables (initial years)"]
+  },
+  "grapes": {
+    "displayName": "Grapes",
+    "overview": "High-value vineyard crop requiring precise irrigation, pruning and disease management.",
+    "sowingWindow": { "kharif": "Not typical", "rabi": "Planting in dormant season", "zaid": "Not typical" },
+    "soilPreference": "Well-drained sandy loam, pH 6.5-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture support"],
+    "intercroppingOptions": ["Legume cover crops", "Onion/garlic in initial establishment phase"]
+  },
+  "apple": {
+    "displayName": "Apple",
+    "overview": "Temperate fruit crop in hill ecosystems requiring chilling hours and strict canopy management.",
+    "sowingWindow": { "kharif": "Monsoon planting in hills", "rabi": "Dormant planting", "zaid": "Not typical" },
+    "soilPreference": "Well-drained loam rich in organic matter, pH 5.5-6.8",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture mission"],
+    "intercroppingOptions": ["Apple + legumes cover", "Apple + vegetables in young orchards"]
+  },
+  "orange": {
+    "displayName": "Orange (Citrus)",
+    "overview": "Commercial citrus crop with regulated irrigation and nutrient programs for fruit quality.",
+    "sowingWindow": { "kharif": "June-August", "rabi": "September-November", "zaid": "February-March" },
+    "soilPreference": "Well-drained loam, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture support"],
+    "intercroppingOptions": ["Citrus + legumes cover", "Citrus + short vegetables in early years"]
+  },
+  "papaya": {
+    "displayName": "Papaya",
+    "overview": "Fast-bearing tropical fruit crop with continuous harvesting under proper nutrient-water balance.",
+    "sowingWindow": { "kharif": "June-August", "rabi": "September-November", "zaid": "February-March" },
+    "soilPreference": "Well-drained sandy loam, pH 6.0-7.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture mission"],
+    "intercroppingOptions": ["Papaya + pulses", "Papaya + leafy vegetables"]
+  },
+  "coconut": {
+    "displayName": "Coconut",
+    "overview": "Perennial coastal and tropical plantation crop with long economic life.",
+    "sowingWindow": { "kharif": "June-September", "rabi": "October-December", "zaid": "Not typical" },
+    "soilPreference": "Well-drained coastal alluvial and lateritic soils, pH 5.2-8.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Coconut development board support"],
+    "intercroppingOptions": ["Coconut + cocoa", "Coconut + banana", "Coconut + pepper"]
+  },
+  "coffee": {
+    "displayName": "Coffee",
+    "overview": "Shade-loving plantation crop grown in humid hill tracts with careful blossom management.",
+    "sowingWindow": { "kharif": "Monsoon planting", "rabi": "Post-monsoon planting", "zaid": "Not typical" },
+    "soilPreference": "Well-drained acidic loam rich in organic matter, pH 5.5-6.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Coffee board support"],
+    "intercroppingOptions": ["Coffee + pepper", "Coffee + cardamom", "Coffee + silver oak shade"]
+  },
+  "pomegranate": {
+    "displayName": "Pomegranate",
+    "overview": "Drought-tolerant fruit crop with high export potential under managed bahar scheduling.",
+    "sowingWindow": { "kharif": "June-August", "rabi": "September-November", "zaid": "February-March" },
+    "soilPreference": "Well-drained light to medium soils, pH 6.0-7.5",
+    "governmentSchemes": ["PM-Kisan", "PMFBY", "Horticulture mission"],
+    "intercroppingOptions": ["Pomegranate + legumes cover", "Pomegranate + onion/garlic"]
+  },
+  "watermelon": {
+    "displayName": "Watermelon",
+    "overview": "Warm-season cucurbit crop with high market turnover and strong irrigation dependence.",
+    "sowingWindow": { "kharif": "June-July (limited)", "rabi": "December-January", "zaid": "February-March" },
+    "soilPreference": "Sandy loam with high drainage, pH 6.0-7.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Watermelon + marigold border", "Watermelon + drip fertigation systems"]
+  },
+  "muskmelon": {
+    "displayName": "Muskmelon",
+    "overview": "Short-duration summer cucurbit valued for sweetness and quick market realization.",
+    "sowingWindow": { "kharif": "June (limited)", "rabi": "December-January", "zaid": "February-March" },
+    "soilPreference": "Light sandy loam with excellent drainage, pH 6.0-7.0",
+    "governmentSchemes": ["PM-Kisan", "PMFBY"],
+    "intercroppingOptions": ["Muskmelon + drip mulching", "Muskmelon + border marigold"]
+  }
+}

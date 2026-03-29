@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import InputForm from './pages/InputForm'
 import Results from './pages/Results'
 import DiseaseDetection from './pages/DiseaseDetection'
+import Advisory from './pages/Advisory'
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/predict" element={<InputForm />} />
         <Route path="/input" element={<InputForm />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/advisory" element={<Advisory />} />
         <Route path="/disease" element={<DiseaseDetection />} />
       </Routes>
     </Router>

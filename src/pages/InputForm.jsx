@@ -368,6 +368,10 @@ export default function InputForm() {
       return
     }
 
+    if (location.state?.advisoryMissing) {
+      setError(t('advisory.redirectMissing', 'Please generate recommendations first to view detailed advisory and profit estimation.'))
+    }
+
     const savedInputs = window.localStorage.getItem('lastInputs')
     if (!savedInputs) {
       return

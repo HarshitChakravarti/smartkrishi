@@ -17,21 +17,30 @@ function formatConfidence(decimal) {
   return `${Math.round(Number(decimal || 0) * 100)}%`
 }
 
-function getConfidenceInterpretation(item) {
-  const parsed = item?.confidence_interpretation
-  if (parsed?.label) return parsed
-
+function getConfidenceInterpretation(item, t) {
   const score = Number(item?.confidence || 0)
   if (score >= 0.75) {
-    return { label: 'Strong Match', description: 'Highly recommended for your farm conditions' }
+    return {
+      label: t('new_results.confidence.strong.label', 'Strong Match'),
+      description: t('new_results.confidence.strong.description', 'Highly recommended for your farm conditions'),
+    }
   }
   if (score >= 0.5) {
-    return { label: 'Good Match', description: 'Well-suited for your farm conditions' }
+    return {
+      label: t('new_results.confidence.good.label', 'Good Match'),
+      description: t('new_results.confidence.good.description', 'Well-suited for your farm conditions'),
+    }
   }
   if (score >= 0.35) {
-    return { label: 'Moderate Match', description: 'Suitable with some local considerations' }
+    return {
+      label: t('new_results.confidence.moderate.label', 'Moderate Match'),
+      description: t('new_results.confidence.moderate.description', 'Suitable with some local considerations'),
+    }
   }
-  return { label: 'Possible Option', description: 'Confirm with local conditions before planting' }
+  return {
+    label: t('new_results.confidence.possible.label', 'Possible Option'),
+    description: t('new_results.confidence.possible.description', 'Confirm with local conditions before planting'),
+  }
 }
 
 function capitalizeCrop(name) {
@@ -52,6 +61,36 @@ function formatSource(source, t) {
     historical_average: t('results.source.historicalAverage', 'Historical Average'),
   }
   return map[source] || source || '--'
+}
+
+function formatMode(mode, t) {
+  const normalized = String(mode || '').toLowerCase()
+  if (normalized === 'planning') {
+    return t('new_results.mode.planning', 'Planning')
+  }
+  if (normalized === 'current') {
+    return t('new_results.mode.current', 'Current')
+  }
+  return mode || '--'
+}
+
+function getLocalizedReason(item, isHindi, t) {
+  if (isHindi) {
+    return item?.reason_hi || item?.reason_hindi || t('new_results.reasonFallback', 'यह फसल आपके वर्तमान खेत संकेतकों के साथ अच्छा मेल दिखाती है।')
+  }
+  return item?.reason || t('new_results.reasonFallbackEn', 'This crop shows good compatibility with your current farm indicators.')
+}
+
+function formatSeasonLabel(season, isHindi) {
+  if (!season) return '--'
+  if (!isHindi) return season
+
+  const map = {
+    kharif: 'खरीफ',
+    rabi: 'रबी',
+    zaid: 'जायद',
+  }
+  return map[String(season).toLowerCase()] || season
 }
 
 function monthWindowLabel(months = []) {
@@ -81,7 +120,6 @@ export default function Results() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [expandedAdvisory, setExpandedAdvisory] = useState(0)
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -113,7 +151,6 @@ export default function Results() {
             return
           }
           setResult(apiResult)
-          setExpandedAdvisory(0)
         }
       } catch (err) {
         if (isActive) {
@@ -163,6 +200,38 @@ export default function Results() {
       // Ignore storage failures and still navigate.
     }
     navigate('/predict', { state: { reset: true } })
+  }
+
+  const getConfidenceBadgeClass = (score) => {
+    const value = Number(score || 0)
+    if (value > 0.7) return 'border-green-200 bg-green-50 text-green-700'
+    if (value >= 0.3) return 'border-amber-200 bg-amber-50 text-amber-700'
+    return 'border-gray-200 bg-gray-100 text-gray-700'
+  }
+
+  const getRankAccentClass = (index) => {
+    if (index === 0) return 'bg-[#2d5016]'
+    if (index === 1) return 'bg-[#b8860b]'
+    return 'bg-[#6b7280]'
+  }
+
+  const handleViewDetailedAdvisory = () => {
+    const userInputs = readStorage('cropRecommendation', readStorage('lastInputs', {}))
+    const payload = {
+      recommendations: (result?.recommendations || []).slice(0, 3),
+      userInputs,
+      inputSummary: result?.input_summary || {},
+      climateUsed: result?.climate_used || {},
+      metadata: result?.metadata || {},
+      mode: result?.mode || userInputs?.activeTab || 'current',
+      timestamp: Date.now(),
+    }
+    try {
+      window.localStorage.setItem('smartkrishi_recommendations', JSON.stringify(payload))
+    } catch {
+      // Proceed with navigation even if localStorage write fails.
+    }
+    navigate('/advisory')
   }
 
   if (loading) {
@@ -248,17 +317,14 @@ export default function Results() {
   }
 
   const topPick = recommendations[0]
-  const topPickInterpretation = getConfidenceInterpretation(topPick)
+  const topPickInterpretation = getConfidenceInterpretation(topPick, t)
   const climate = result?.climate_used || {}
   const inputSummary = result?.input_summary || {}
   const metadata = result?.metadata || {}
-
-  const advisoryRows = [
-    { icon: '💧', label: t('new_results.advisoryRows.irrigation', 'Irrigation'), text: 'irrigation' },
-    { icon: '🧪', label: t('new_results.advisoryRows.fertilizer', 'Fertilizer'), text: 'fertilizer' },
-    { icon: '🐛', label: t('new_results.advisoryRows.pest_watch', 'Pest Watch'), text: 'pest_watch' },
-    { icon: '🌤', label: t('new_results.advisoryRows.weather_note', 'Weather Note'), text: 'weather_note' },
-  ]
+  const modeLabel = formatMode(result?.mode, t)
+  const disclaimerText = isHindi
+    ? (metadata?.disclaimer_hi || t('new_results.fallback.disclaimer'))
+    : (metadata?.disclaimer || t('new_results.fallback.disclaimer'))
 
   return (
     <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
@@ -278,7 +344,7 @@ export default function Results() {
                 {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(topPick?.confidence)} - {topPickInterpretation.label}
               </span>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-4 py-1 text-sm font-semibold text-amber-700">
-                {inputSummary?.season || '--'} • {result?.mode || '--'}
+                {formatSeasonLabel(inputSummary?.season, isHindi)} • {modeLabel}
               </span>
             </div>
           </div>
@@ -287,7 +353,7 @@ export default function Results() {
             <h1 className="font-heading text-4xl font-bold text-[#1a3a2a] sm:text-5xl">
               {getCropName(topPick, isHindi)}
             </h1>
-            <p className="mt-3 max-w-3xl text-[16px] leading-7 text-[#6b7280]">{topPick?.reason || '--'}</p>
+            <p className="mt-3 max-w-3xl text-[16px] leading-7 text-[#6b7280]">{getLocalizedReason(topPick, isHindi, t)}</p>
             <p className="mt-2 text-sm font-medium text-[#2f6a4f]">{topPickInterpretation.description}</p>
           </div>
 
@@ -297,7 +363,7 @@ export default function Results() {
                 🏆 {t('new_results.topCrop', 'Top Crop')}
               </p>
               <p className="mt-2 text-3xl font-bold text-[#1a3a2a]">{getCropName(topPick, isHindi)}</p>
-              <p className="mt-1 text-sm text-[#6b7280]">{topPick?.season || '--'} {t('new_results.seasonText', 'season')}</p>
+              <p className="mt-1 text-sm text-[#6b7280]">{formatSeasonLabel(topPick?.season, isHindi)} {t('new_results.seasonText', 'season')}</p>
             </article>
 
             <article className="rounded-xl border border-[#e5e7eb] bg-white p-5">
@@ -339,125 +405,74 @@ export default function Results() {
           <h2 className="font-heading text-3xl font-bold text-[#1a3a2a]">
             🌱 {t('new_results.topCropChoices', { count: recommendations.length, defaultValue: `Top ${recommendations.length} Crop Choices` })}
           </h2>
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <div className="mt-6 space-y-4">
             {recommendations.map((item, index) => {
-              const isTop = index === 0
-              const interpretation = getConfidenceInterpretation(item)
+              const interpretation = getConfidenceInterpretation(item, t)
               return (
                 <article
                   key={`${item.crop}-${item.rank}`}
-                  className={[
-                    'relative overflow-hidden rounded-2xl bg-white p-5',
-                    isTop ? 'border-2 border-green-200' : 'border border-gray-200',
-                  ].join(' ')}
+                  className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 shadow-[0_6px_18px_rgba(30,41,59,0.06)] lg:p-7"
                 >
-                  <span className={['absolute inset-y-0 left-0 w-1', isTop ? 'bg-green-600' : 'bg-amber-400'].join(' ')} />
+                  <span className={['absolute inset-y-0 left-0 w-1', getRankAccentClass(index)].join(' ')} />
 
-                  <div className="ml-2 flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#1a3a2a]">
-                        {t('new_results.rank', { count: item.rank, defaultValue: `Rank ${item.rank}` })}
-                      </p>
-                      <h3 className="mt-1 text-3xl font-bold text-[#1a3a2a]">{getCropName(item, isHindi)}</h3>
+                  <div className="ml-2 grid gap-5 lg:grid-cols-[minmax(220px,0.95fr)_minmax(320px,1.25fr)_minmax(320px,1fr)] lg:items-start">
+                    <div className="min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#1a3a2a]">
+                          {t('new_results.rank', { count: item.rank, defaultValue: `Rank ${item.rank}` })}
+                        </p>
+                        <span
+                          className={[
+                            'rounded-full border px-3 py-1 text-sm font-semibold whitespace-nowrap',
+                            getConfidenceBadgeClass(item.confidence),
+                          ].join(' ')}
+                        >
+                          {formatConfidence(item.confidence)}
+                        </span>
+                      </div>
+                      <h3 className="mt-2 font-heading text-4xl font-bold leading-none text-[#1a3a2a]">{getCropName(item, isHindi)}</h3>
+                      <p className="mt-4 inline-flex rounded-full bg-[#edf7ef] px-3 py-1 text-sm font-medium text-[#2f6a4f]">{interpretation.label}</p>
                     </div>
-                    <span
-                      className={[
-                        'rounded-full border px-3 py-1 text-sm font-semibold',
-                        isTop ? 'border-green-200 bg-green-50 text-green-700' : 'border-amber-200 bg-amber-50 text-amber-700',
-                      ].join(' ')}
-                    >
-                      {t('new_results.aiConfidence', 'AI Confidence')}: {formatConfidence(item.confidence)} - {interpretation.label}
-                    </span>
-                  </div>
 
-                  <div className="ml-2 mt-4 rounded-lg bg-[#faf8f2] p-4 text-[15px] leading-7 text-[#6b7280]">{item.reason}</div>
-                  <p className="ml-2 mt-3 text-sm font-medium text-[#2f6a4f]">{interpretation.description}</p>
-
-                  <div className="ml-2 mt-4 grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-lg bg-gray-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
-                        {t('new_results.growingTime', 'Growing Time')}
-                      </p>
-                      <p className="mt-1 text-2xl font-bold text-[#1a3a2a]">{item.growing_duration}</p>
-                      <p className="mt-1 text-sm text-[#6b7280]">{t('new_results.seasonText', 'Season')}: {item.season}</p>
+                    <div className="min-w-0 lg:pt-8">
+                      <p className="text-[18px] leading-8 text-[#4b5563]">{getLocalizedReason(item, isHindi, t)}</p>
                     </div>
-                    <div className="rounded-lg bg-gray-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
-                        {t('new_results.mlScore', 'ML Score')}
-                      </p>
-                      <p className="mt-1 text-2xl font-bold text-[#1a3a2a]">{formatConfidence(item.ml_score)}</p>
-                      <p className="mt-1 text-sm text-[#6b7280]">
-                        {t('new_results.rule', 'Rule')}: {item.rule_adjustment}
-                      </p>
+
+                    <div className="rounded-xl border border-[#e5e7eb] bg-[#f8faf8] p-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="border-r border-[#e1e5e1] pr-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
+                            {t('new_results.seasonText', 'Season')}
+                          </p>
+                          <p className="mt-1 text-base font-bold text-[#1a3a2a]">{formatSeasonLabel(item.season, isHindi)}</p>
+                        </div>
+                        <div className="border-r border-[#e1e5e1] pr-2">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
+                            {t('new_results.growingTime', 'Growing Time')}
+                          </p>
+                          <p className="mt-1 text-base font-bold text-[#1a3a2a]">{item.growing_duration || '--'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
+                            {t('new_results.mlScore', 'ML Score')}
+                          </p>
+                          <p className="mt-1 text-base font-bold text-[#1a3a2a]">{formatConfidence(item.ml_score)}</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </article>
               )
             })}
           </div>
-        </section>
-
-        <section className="mt-10 rounded-2xl border border-[#e5e7eb] bg-[#faf8f2] p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#d4a843]">
-            {t('new_results.actionPlan', 'Action Plan')}
-          </p>
-          <h2 className="mt-2 font-heading text-3xl font-bold text-[#1a3a2a]">
-            {t('new_results.cropAdvisories', 'Crop Advisories')}
-          </h2>
-          <p className="mt-2 text-[16px] text-[#6b7280]">
-            {t('new_results.advisoryHint', 'Open each section for irrigation, fertilizer, pest control, and weather guidance.')}
-          </p>
-
-          <div className="mt-6 space-y-3">
-            {recommendations.map((item, index) => {
-              const isOpen = expandedAdvisory === index
-              return (
-                <article key={`advisory-${item.crop}-${item.rank}`} className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedAdvisory((value) => (value === index ? -1 : index))}
-                    aria-expanded={isOpen}
-                    className="w-full p-5 text-left transition hover:bg-gray-50"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xl font-bold text-[#1a3a2a]">
-                          🌾 {t('new_results.advisoryTitle', { crop: getCropName(item, isHindi), defaultValue: `${getCropName(item, isHindi)} Advisory` })}
-                        </p>
-                        <p className="mt-1 text-sm text-[#6b7280]">{item.reason}</p>
-                      </div>
-                      <span className="text-2xl font-medium text-[#1a3a2a]">{isOpen ? '−' : '+'}</span>
-                    </div>
-                  </button>
-
-                  <div className={[
-                    'overflow-hidden transition-all duration-300 ease-out',
-                    isOpen ? 'max-h-[680px] border-t border-gray-100' : 'max-h-0',
-                  ].join(' ')}>
-                    <div className="p-5">
-                      <div className="space-y-5 border-l-2 border-green-100 pl-4">
-                        {advisoryRows.map((row, rowIndex) => (
-                          <div key={`${item.crop}-${row.text}`} className="flex gap-3">
-                            <div className={[
-                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                              index === 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700',
-                            ].join(' ')}>
-                              {rowIndex + 1}
-                            </div>
-                            <div>
-                              <p className="text-[16px] font-semibold text-[#1a3a2a]">
-                                {row.icon} {row.label}
-                              </p>
-                              <p className="mt-1 max-w-2xl text-[15px] leading-7 text-[#4b5563]">{item?.advisories?.[row.text] || '--'}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              )
-            })}
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={handleViewDetailedAdvisory}
+              className="w-full max-w-[600px] rounded-xl bg-[#2d5016] px-8 py-4 text-base font-semibold text-white transition duration-200 hover:bg-[#3b6520]"
+            >
+              📋 {t('new_results.viewDetailedCta', 'View Detailed Advisory & Profit Estimation →')}
+            </button>
           </div>
         </section>
 
@@ -477,7 +492,7 @@ export default function Results() {
             })}
           </p>
           <p className="mx-auto mt-4 max-w-2xl text-sm italic text-gray-500">
-            ⚠️ {metadata?.disclaimer || t('new_results.fallback.disclaimer')}
+            ⚠️ {disclaimerText}
           </p>
         </section>
 

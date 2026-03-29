@@ -1,0 +1,23 @@
+{
+  "generated_files": [
+    "report/correlation_heatmap.png",
+    "report/class_distribution.png",
+    "report/confusion_matrix_counts.png",
+    "report/confusion_matrix_normalized.png",
+    "report/roc_curve_multiclass.png",
+    "report/feature_importance_top15.png",
+    "report/per_crop_accuracy.png",
+    "report/model_comparison.png",
+    "report/confidence_calibration.png"
+  ],
+  "model_type": "XGBoost-default",
+  "accuracy": 0.982692,
+  "macro_f1": 0.982681,
+  "weighted_f1": 0.982681,
+  "extra_comparison_metrics": {
+    "dummy_accuracy": 0.038461538461538464,
+    "dummy_macro_f1": 0.0028490028490028487,
+    "saved_model_accuracy_on_holdout": 0.9826923076923076,
+    "saved_model_macro_f1_on_holdout": 0.9826814655342353
+  }
+}
