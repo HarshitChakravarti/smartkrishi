@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 320" role="img" aria-label="Crop image placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9" />
+      <stop offset="100%" stop-color="#f3f8ef" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="320" fill="url(#bg)" />
+  <g fill="#2d5016" fill-opacity="0.18">
+    <circle cx="110" cy="90" r="72" />
+    <circle cx="720" cy="260" r="120" />
+  </g>
+  <g fill="#2d5016">
+    <path d="M287 220c18-45 57-95 113-110 56-15 101 9 113 35-55 7-101 31-130 76-15 23-24 43-30 62-21-18-56-31-66-35z" />
+    <path d="M420 243c1-24 14-72 43-103 30-31 67-38 87-34-20 37-46 62-73 84-18 15-33 33-42 53-6 0-10 0-15 0z" opacity="0.82" />
+  </g>
+  <text x="50%" y="62%" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#2d5016" font-weight="700">
+    Crop image
+  </text>
+</svg>

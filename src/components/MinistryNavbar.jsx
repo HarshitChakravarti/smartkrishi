@@ -1,11 +1,13 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 export default function MinistryNavbar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { t, i18n } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const activeLanguage = i18n.resolvedLanguage || i18n.language || 'hi'
   const isHindi = activeLanguage.startsWith('hi')
   const isEnglish = activeLanguage.startsWith('en')
@@ -14,8 +16,30 @@ export default function MinistryNavbar() {
     i18n.changeLanguage(lang)
   }
 
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setScrolled(false)
+      return undefined
+    }
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 48)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [location.pathname])
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#1a3a2a] green-pattern">
+    <header
+      className={[
+        'sticky top-0 z-50 transition duration-300',
+        scrolled
+          ? 'border-b border-white/20 bg-[rgba(26,46,26,0.95)] shadow-[0_8px_18px_rgba(7,20,13,0.25)] backdrop-blur-0 md:backdrop-blur-md green-pattern'
+          : 'border-b border-white/10 bg-[#1a3a2a] green-pattern',
+      ].join(' ')}
+    >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <div className="min-w-0">
           <p className="font-heading truncate text-xl font-bold text-white sm:text-2xl">🌾 SmartKrishi AI</p>
