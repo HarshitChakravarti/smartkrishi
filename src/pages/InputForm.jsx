@@ -258,29 +258,65 @@ function StepBadge({ number, label, active, done }) {
 }
 
 function SliderField({ label, min, max, value, step = 1, suffix = '', onChange }) {
-  const percent = ((Number(value) - min) / (max - min)) * 100
+  const numericValue = Number(value)
+  const clampedValue = Math.min(max, Math.max(min, Number.isFinite(numericValue) ? numericValue : min))
+  const percent = ((clampedValue - min) / (max - min)) * 100
+  const decimals = String(step).includes('.') ? String(step).split('.')[1].length : 0
+  const unitLabel = String(suffix || '').trim()
+
+  const commitValue = (nextValue) => {
+    const parsed = Number(nextValue)
+    if (!Number.isFinite(parsed)) {
+      return
+    }
+    const clamped = Math.min(max, Math.max(min, parsed))
+    const normalized = Number((Math.round(clamped / step) * step).toFixed(decimals))
+    onChange(normalized)
+  }
 
   return (
-    <div className="space-y-2 rounded-xl border border-gray-200 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold text-[#1f2f24]">{label}</p>
-        <p className="text-sm font-bold text-[#d4a843]">
-          {value}
-          {suffix}
-        </p>
+    <div className="space-y-3 rounded-2xl border border-[#dfe6e0] bg-gradient-to-br from-white to-[#f4f8f5] p-4 shadow-[0_10px_24px_-20px_rgba(19,44,31,0.9)]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-[#1f2f24]">{label}</p>
+          <p className="mt-1 text-xs text-[#6c7d72]">
+            Range: {min} - {max}
+            {unitLabel ? ` ${unitLabel}` : ''}
+          </p>
+        </div>
+
+        <label className="inline-flex items-center gap-2 rounded-lg border border-[#d7e0d9] bg-white px-3 py-2 shadow-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#6c7d72]">Manual</span>
+          <input
+            type="number"
+            min={min}
+            max={max}
+            step={step}
+            value={clampedValue}
+            onChange={(e) => commitValue(e.target.value)}
+            className="w-20 border-none bg-transparent p-0 text-right text-sm font-bold text-[#1a3a2a] outline-none"
+          />
+          {unitLabel ? <span className="text-xs font-semibold text-[#d4a843]">{unitLabel}</span> : null}
+        </label>
       </div>
+
       <input
         type="range"
         min={min}
         max={max}
         step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        value={clampedValue}
+        onChange={(e) => commitValue(e.target.value)}
         className="soil-slider h-2 w-full cursor-pointer appearance-none rounded-full"
         style={{ background: `linear-gradient(to right, #2f7d47 ${percent}%, #e5e7eb ${percent}%)` }}
       />
+
       <div className="flex items-center justify-between text-xs text-gray-500">
         <span>{min}</span>
+        <span className="font-semibold text-[#d4a843]">
+          {clampedValue}
+          {unitLabel ? ` ${unitLabel}` : ''}
+        </span>
         <span>{max}</span>
       </div>
     </div>
@@ -296,7 +332,7 @@ export default function InputForm() {
   const locale = isHindi ? 'hi' : 'en'
 
   const [step, setStep] = useState(0)
-  const [activeTab, setActiveTab] = useState('current')
+  const activeTab = 'planning'
 
   const [selectedState, setSelectedState] = useState('Maharashtra')
   const [district, setDistrict] = useState('Pune')
@@ -318,7 +354,7 @@ export default function InputForm() {
   const [humidityInput, setHumidityInput] = useState('')
   const [rainfallInput, setRainfallInput] = useState('')
 
-  const { data: weather, loading: weatherLoading, error: weatherError, refetch: refetchWeather } = useStateWeather({
+  const { data: weather } = useStateWeather({
     state: selectedState,
     district,
     mode: activeTab,
@@ -352,7 +388,6 @@ export default function InputForm() {
       setSelectedState('Maharashtra')
       setDistrict('Pune')
       setLandArea('5')
-      setActiveTab('current')
       setFarmingMonth('June')
       setPreviousCrop('none')
       setPreviousCropMonth('February')
@@ -382,7 +417,6 @@ export default function InputForm() {
       setSelectedState(parsed.state || 'Maharashtra')
       setDistrict(parsed.district || 'Pune')
       setLandArea(parsed.landArea || '5')
-      setActiveTab(parsed.activeTab || 'current')
       setFarmingMonth(parsed.farmingMonth || 'June')
       setPreviousCrop(normalizePreviousCropValue(parsed.previousCrop))
       setPreviousCropMonth(parsed.previousCropMonth || 'February')
@@ -406,7 +440,7 @@ export default function InputForm() {
     setTemperatureInput(weather.temperature != null ? String(Math.round(weather.temperature * 10) / 10) : '')
     setHumidityInput(weather.humidity != null ? String(Math.round(weather.humidity)) : '')
     setRainfallInput(weather.precipitation != null ? String(Math.round(weather.precipitation * 10) / 10) : '')
-  }, [weather, activeTab, selectedState, district, farmingMonth])
+  }, [weather])
 
   const validateStep = (stepToValidate) => {
     if (!selectedState || !district) {
@@ -418,16 +452,7 @@ export default function InputForm() {
       return t('predictForm.validation.landAreaPositive')
     }
 
-    if (stepToValidate === 1 && activeTab === 'current') {
-      const temperature = Number(temperatureInput)
-      const humidity = Number(humidityInput)
-      const rainfall = Number(rainfallInput)
-      if (weatherLoading || weatherError || Number.isNaN(temperature) || Number.isNaN(humidity) || Number.isNaN(rainfall)) {
-        return t('predictForm.validation.weatherUnavailable')
-      }
-    }
-
-    if (stepToValidate === 1 && activeTab === 'planning') {
+    if (stepToValidate === 1) {
       if (!farmingMonth || !previousCrop || !previousCropMonth) {
         return t('predictForm.validation.planningRequired')
       }
@@ -490,53 +515,26 @@ export default function InputForm() {
   }
 
   return (
-    <div className={[isHindi ? 'lang-hi' : '', 'min-h-screen bg-[#faf8f2] text-[#1f2f24]'].join(' ')}>
+    <div className={[isHindi ? 'lang-hi' : '', 'relative min-h-screen overflow-hidden text-[#1f2f24]'].join(' ')}>
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/hero-farm.png')" }} />
+        <div className="absolute inset-0 bg-[#0d1f15]/35" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#efe5d3]/45 via-transparent to-[#faf8f2]" />
+      </div>
+
       <MinistryNavbar />
 
-      <main className="mx-auto max-w-[1100px] px-4 pb-14 pt-10 sm:px-6 lg:px-8">
+      <main className="relative mx-auto max-w-[1100px] px-4 pb-14 pt-10 sm:px-6 lg:px-8">
         <section className="reveal-on-scroll is-visible">
           <h1 className="font-heading text-4xl font-bold text-[#1a3a2a] sm:text-5xl">{t('predictForm.header.title')}</h1>
           <p className="mt-2 text-[16px] text-gray-600">{t('predictForm.header.subtitle')}</p>
-        </section>
-
-        <section className="mt-8 reveal-on-scroll is-visible">
-          <div className="mx-auto max-w-3xl rounded-xl border border-[#d5ddd8] bg-white p-2">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveTab('current')}
-                className={[
-                  'min-h-[60px] rounded-lg px-3 text-center font-semibold transition duration-300',
-                  isHindi ? 'text-base' : 'text-sm sm:text-base',
-                  activeTab === 'current'
-                    ? 'bg-[#1a3a2a] text-white'
-                    : 'border border-[#1a3a2a] bg-white text-[#1a3a2a] hover:bg-[#f2f6f4]',
-                ].join(' ')}
-              >
-                {t('predictForm.tabs.current')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('planning')}
-                className={[
-                  'min-h-[60px] rounded-lg px-3 text-center font-semibold transition duration-300',
-                  isHindi ? 'text-base' : 'text-sm sm:text-base',
-                  activeTab === 'planning'
-                    ? 'bg-[#1a3a2a] text-white'
-                    : 'border border-[#1a3a2a] bg-white text-[#1a3a2a] hover:bg-[#f2f6f4]',
-                ].join(' ')}
-              >
-                {t('predictForm.tabs.planning')}
-              </button>
-            </div>
-          </div>
         </section>
 
         <section className="mt-8 flex flex-wrap items-center gap-5 reveal-on-scroll is-visible">
           <StepBadge number={1} label={t('predictForm.steps.one')} active={step === 0} done={step > 0} />
           <StepBadge
             number={2}
-            label={activeTab === 'current' ? t('predictForm.steps.twoCurrent') : t('predictForm.steps.twoPlanning')}
+            label={t('predictForm.steps.twoPlanning')}
             active={step === 1}
             done={step > 1}
           />
@@ -610,79 +608,6 @@ export default function InputForm() {
 
           {step === 1 ? (
             <section className="space-y-6 animate-rise-in">
-              {activeTab === 'current' ? (
-                <article className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
-                  <h2 className="text-2xl font-bold text-[#1a3a2a]">{t('predictForm.weather.title')}</h2>
-                  <p className="mt-1 text-sm text-gray-500">{t('predictForm.weather.subtitle')}</p>
-                  <div className="mt-5 h-px bg-gray-200" />
-
-                  <p className="mt-4 text-sm text-gray-500">📍 Live weather for {district}, {selectedState}</p>
-
-                  {weatherError ? (
-                    <div className="mt-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-4 text-sm text-amber-800">
-                      <p>{t('home.weather.unavailable')}</p>
-                      <button
-                        type="button"
-                        onClick={refetchWeather}
-                        className="mt-3 min-h-11 rounded-lg border border-amber-500 px-4 py-2 font-semibold"
-                      >
-                        {t('home.weather.retry')}
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mt-5 grid gap-5 md:grid-cols-3">
-                        <div>
-                          <label htmlFor="temperatureInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.temperature')}</label>
-                          <input
-                            id="temperatureInput"
-                            type="number"
-                            value={temperatureInput}
-                            onChange={(e) => setTemperatureInput(e.target.value)}
-                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="humidityInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.humidity')}</label>
-                          <input
-                            id="humidityInput"
-                            type="number"
-                            value={humidityInput}
-                            onChange={(e) => setHumidityInput(e.target.value)}
-                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="rainfallInput" className="block text-sm font-semibold text-[#1f2f24]">{t('predictForm.weather.rainfall')}</label>
-                          <input
-                            id="rainfallInput"
-                            type="number"
-                            value={rainfallInput}
-                            onChange={(e) => setRainfallInput(e.target.value)}
-                            className="mt-2 min-h-11 w-full rounded-lg border border-gray-300 bg-[#faf8f2] px-4 py-3 outline-none transition focus:border-[#1a3a2a] focus:ring-2 focus:ring-[#1a3a2a]/15"
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-4 rounded-lg border border-[#d8dfd9] bg-[#faf8f2] px-4 py-3 text-sm text-[#4b5b54]">
-                        ℹ️ Values are auto-filled from live weather. You can edit them if you have local measurements.
-                      </div>
-
-                      <div className="mt-3 flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={refetchWeather}
-                          className="min-h-11 rounded-lg border border-[#1a3a2a] bg-white px-4 py-2 text-sm font-semibold text-[#1a3a2a]"
-                        >
-                          🔄 Refresh Weather
-                        </button>
-                        {weatherLoading ? <span className="text-sm text-gray-500">Fetching weather...</span> : null}
-                      </div>
-                    </>
-                  )}
-                </article>
-              ) : (
                 <article className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
                   <h2 className="text-2xl font-bold text-[#1a3a2a]">{t('predictForm.planning.title')}</h2>
                   <p className="mt-1 text-sm text-gray-500">{t('predictForm.planning.subtitle')}</p>
@@ -756,16 +681,18 @@ export default function InputForm() {
                     <p className="mt-2 text-xs text-[#6b7280]">📊 Based on historical monthly averages</p>
                   </div>
                 </article>
-              )}
             </section>
           ) : null}
 
           {step === 2 ? (
             <section className="space-y-6 animate-rise-in">
-              <article className="rounded-xl border border-gray-200 bg-white p-6 sm:p-8">
+              <article className="rounded-2xl border border-[#d9e3dc] bg-white/95 p-6 shadow-[0_24px_48px_-30px_rgba(20,45,32,0.95)] backdrop-blur-sm sm:p-8">
                 <h2 className="text-2xl font-bold text-[#1a3a2a]">{t('predictForm.soil.title')}</h2>
                 <p className="mt-1 text-sm text-gray-500">{t('predictForm.soil.subtitle')}</p>
                 <div className="mt-5 h-px bg-gray-200" />
+                <p className="mt-4 rounded-lg border border-[#e2e8e4] bg-[#f6faf7] px-4 py-3 text-xs font-medium text-[#4b5b54]">
+                  Fine-tune values with sliders, or type exact numbers in the manual field for precise soil report entry.
+                </p>
 
                 <div className="mt-6 space-y-4">
                   <SliderField
@@ -773,7 +700,7 @@ export default function InputForm() {
                     min={0}
                     max={100}
                     value={nitrogen}
-                    suffix={` ${t('predictForm.soil.ppmSuffix')}`}
+                    suffix={t('predictForm.soil.ppmSuffix')}
                     onChange={setNitrogen}
                   />
                   <SliderField
@@ -781,7 +708,7 @@ export default function InputForm() {
                     min={0}
                     max={100}
                     value={phosphorus}
-                    suffix={` ${t('predictForm.soil.ppmSuffix')}`}
+                    suffix={t('predictForm.soil.ppmSuffix')}
                     onChange={setPhosphorus}
                   />
                   <SliderField
@@ -789,7 +716,7 @@ export default function InputForm() {
                     min={0}
                     max={100}
                     value={potassium}
-                    suffix={` ${t('predictForm.soil.ppmSuffix')}`}
+                    suffix={t('predictForm.soil.ppmSuffix')}
                     onChange={setPotassium}
                   />
                   <SliderField label={t('predictForm.soil.ph')} min={4} max={9} value={ph} step={0.1} onChange={setPh} />
