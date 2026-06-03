@@ -357,7 +357,6 @@ export default function InputForm() {
   const { data: weather } = useStateWeather({
     state: selectedState,
     district,
-    mode: activeTab,
     farmingMonth,
   })
 

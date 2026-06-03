@@ -7,7 +7,7 @@ and pesticide guidance for Indian farming conditions.
 
 - Crop recommendation using ML (`N, P, K, humidity, rainfall`)
 - Prediction-time personalization (`farm_size, previous_crop, season`)
-- Live weather inputs from Open-Meteo (temperature, humidity, rainfall)
+- Historical climate inputs for seasonal planning (temperature, humidity, rainfall)
 - Farming guidance cards (irrigation, fertilizer, pest, weather tips)
 - Disease detection demo page
 

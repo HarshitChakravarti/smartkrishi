@@ -286,7 +286,6 @@ def _water_component(candidate: dict, crop_profile, rainfall: float) -> tuple[fl
 
 
 def _compute_agronomic_score(
-    mode: str,
     season_score: float,
     climate_score: float,
     soil_score: float,
@@ -295,25 +294,14 @@ def _compute_agronomic_score(
     farm_size_score: float,
     water_score: float,
 ) -> float:
-    if mode == "planning":
-        return _clamp01(
-            season_score * 0.26
-            + climate_score * 0.14
-            + soil_score * 0.18
-            + rotation_score * 0.16
-            + regional_score * 0.09
-            + farm_size_score * 0.07
-            + water_score * 0.10
-        )
-
     return _clamp01(
-        season_score * 0.16
-        + climate_score * 0.24
+        season_score * 0.26
+        + climate_score * 0.14
         + soil_score * 0.18
-        + regional_score * 0.12
-        + farm_size_score * 0.08
-        + water_score * 0.12
-        + rotation_score * 0.10
+        + rotation_score * 0.16
+        + regional_score * 0.09
+        + farm_size_score * 0.07
+        + water_score * 0.10
     )
 
 
@@ -330,7 +318,6 @@ def _fit_adjustment(score: float, excellent_boost: float, acceptable_boost: floa
 def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
     """Apply capped agronomic adjustments on top of ML confidence."""
     enhanced_candidates = []
-    mode = str(context.get("mode", "")).lower()
     farming_month = str(context.get("farming_month", ""))
     detected_season = detect_season(farming_month)
     rainfall = float(context.get("avg_rainfall", 100))
@@ -347,31 +334,27 @@ def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
         climate_score, climate_reason = _climate_component(candidate, crop_profile, context)
         soil_score, soil_reason = _soil_component(candidate, crop_profile, context)
 
-        if mode == "planning":
-            if crop_profile:
-                raw_rotation = crop_profile.get_rotation_score(previous_crop)
-                if raw_rotation >= 0.15:
-                    rotation_score = 0.95
-                elif raw_rotation > 0:
-                    rotation_score = 0.80
-                elif raw_rotation == 0:
-                    rotation_score = 0.60
-                elif raw_rotation <= -0.30:
-                    rotation_score = 0.05
-                else:
-                    rotation_score = 0.30
-                rotation_reason = crop_profile.get_rotation_reason(previous_crop)
+        if crop_profile:
+            raw_rotation = crop_profile.get_rotation_score(previous_crop)
+            if raw_rotation >= 0.15:
+                rotation_score = 0.95
+            elif raw_rotation > 0:
+                rotation_score = 0.80
+            elif raw_rotation == 0:
+                rotation_score = 0.60
+            elif raw_rotation <= -0.30:
+                rotation_score = 0.05
             else:
-                rotation_score, rotation_reason = _generic_rotation_score(crop_name, previous_crop)
+                rotation_score = 0.30
+            rotation_reason = crop_profile.get_rotation_reason(previous_crop)
         else:
-            rotation_score, rotation_reason = 0.60, ""
+            rotation_score, rotation_reason = _generic_rotation_score(crop_name, previous_crop)
 
         regional_score, regional_reason = _regional_component(crop_profile, state)
         farm_size_score, farm_size_reason = _farm_size_component(crop_profile, farm_size)
         water_score, water_reason = _water_component(candidate, crop_profile, rainfall)
 
         agronomic_score = _compute_agronomic_score(
-            mode=mode,
             season_score=season_score,
             climate_score=climate_score,
             soil_score=soil_score,
@@ -410,13 +393,12 @@ def apply_all_rules(candidates: list[dict], context: dict) -> list[dict]:
         if soil_adjustment:
             adjustments.append((soil_adjustment, soil_reason))
 
-        if mode == "planning":
-            if rotation_score >= 0.90:
-                adjustments.append((IDEAL_ROTATION_BOOST, rotation_reason))
-            elif rotation_score <= 0.10:
-                adjustments.append((SAME_CROP_ROTATION_PENALTY, rotation_reason))
-            elif rotation_score < 0.45:
-                adjustments.append((BAD_PREDECESSOR_PENALTY, rotation_reason))
+        if rotation_score >= 0.90:
+            adjustments.append((IDEAL_ROTATION_BOOST, rotation_reason))
+        elif rotation_score <= 0.10:
+            adjustments.append((SAME_CROP_ROTATION_PENALTY, rotation_reason))
+        elif rotation_score < 0.45:
+            adjustments.append((BAD_PREDECESSOR_PENALTY, rotation_reason))
 
         if regional_score >= 1.0:
             adjustments.append((BEST_STATE_BOOST, regional_reason))

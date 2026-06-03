@@ -1,4 +1,4 @@
-"""Layer 1 feature generation for current and planning recommendation modes."""
+"""Layer 1 feature generation for planning recommendations."""
 
 from __future__ import annotations
 
@@ -234,34 +234,6 @@ def compute_climate_for_window(state: str, month_window: list[str]) -> dict[str,
     }
 
 
-def generate_features_current_mode(payload: dict[str, Any]) -> tuple[dict[str, float], dict[str, Any]]:
-    """Use incoming live weather directly for current conditions mode."""
-    raw_climate = {
-        "temperature": float(payload["temperature"]),
-        "humidity": float(payload["humidity"]),
-        "rainfall": float(payload["rainfall"]),
-    }
-    aligned_climate = align_climate_record(raw_climate, source="live_weather")
-    feature_vector = {
-        "N": float(payload["N"]),
-        "P": float(payload["P"]),
-        "K": float(payload["K"]),
-        "pH": _payload_ph(payload),
-        "temperature": aligned_climate["temperature"],
-        "humidity": aligned_climate["humidity"],
-        "rainfall": aligned_climate["rainfall"],
-    }
-    climate_meta = {
-        "temperature": raw_climate["temperature"],
-        "humidity": raw_climate["humidity"],
-        "rainfall": raw_climate["rainfall"],
-        "source": "live_weather",
-        "months_covered": None,
-        "aligned_for_model": aligned_climate,
-    }
-    return feature_vector, climate_meta
-
-
 def generate_features_planning_mode(payload: dict[str, Any], crop_name: str) -> tuple[dict[str, float], dict[str, Any]]:
     """Derive crop-specific climate using state historical windows in planning mode."""
     duration = get_crop_duration(crop_name)
@@ -283,10 +255,8 @@ def generate_features_planning_mode(payload: dict[str, Any], crop_name: str) -> 
 
 
 def generate_features(payload: dict[str, Any], crop_name: str | None = None) -> tuple[dict[str, float], dict[str, Any]]:
-    """Route feature generation by mode."""
+    """Generate planning features from historical crop-window climate."""
     mode = str(payload.get("activeTab", "")).lower()
-    if mode == "current":
-        return generate_features_current_mode(payload)
     if mode == "planning":
         if not crop_name:
             raise ValueError("crop_name is required for planning mode feature generation")

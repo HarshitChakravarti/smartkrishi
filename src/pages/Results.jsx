@@ -57,7 +57,6 @@ function getCropName(item, isHindi) {
 
 function formatSource(source, t) {
   const map = {
-    live_weather: t('results.source.liveWeather', 'Live Weather'),
     historical_average: t('results.source.historicalAverage', 'Historical Average'),
   }
   return map[source] || source || '--'
@@ -68,17 +67,14 @@ function formatMode(mode, t) {
   if (normalized === 'planning') {
     return t('new_results.mode.planning', 'Planning')
   }
-  if (normalized === 'current') {
-    return t('new_results.mode.current', 'Current')
-  }
-  return mode || '--'
+  return t('new_results.mode.planning', 'Planning')
 }
 
 function getLocalizedReason(item, isHindi, t) {
   if (isHindi) {
-    return item?.reason_hi || item?.reason_hindi || t('new_results.reasonFallback', 'यह फसल आपके वर्तमान खेत संकेतकों के साथ अच्छा मेल दिखाती है।')
+    return item?.reason_hi || item?.reason_hindi || t('new_results.reasonFallback', 'यह फसल आपकी नियोजित खेत परिस्थितियों के साथ अच्छा मेल दिखाती है।')
   }
-  return item?.reason || t('new_results.reasonFallbackEn', 'This crop shows good compatibility with your current farm indicators.')
+  return item?.reason || t('new_results.reasonFallbackEn', 'This crop shows good compatibility with your planned farm conditions.')
 }
 
 function formatSeasonLabel(season, isHindi) {
@@ -223,7 +219,7 @@ export default function Results() {
       inputSummary: result?.input_summary || {},
       climateUsed: result?.climate_used || {},
       metadata: result?.metadata || {},
-      mode: result?.mode || userInputs?.activeTab || 'current',
+      mode: result?.mode || userInputs?.activeTab || 'planning',
       timestamp: Date.now(),
     }
     try {
@@ -301,7 +297,7 @@ export default function Results() {
               {t('new_results.noSuitableTitle', 'No suitable crops found')}
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-[16px] text-[#6b7280]">
-              {t('new_results.noSuitableBody', 'No suitable crops found for your current inputs. Try adjusting soil parameters or selecting a different season.')}
+              {t('new_results.noSuitableBody', 'No suitable crops found for your planning inputs. Try adjusting soil parameters or selecting a different season.')}
             </p>
             <button
               type="button"

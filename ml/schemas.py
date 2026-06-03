@@ -2,21 +2,15 @@
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
-
-
-class TabMode(str, Enum):
-    CURRENT = "current"
-    PLANNING = "planning"
 
 
 class PredictionRequest(BaseModel):
     """Accept the exact JSON payload from InputForm.jsx."""
 
-    activeTab: TabMode
+    activeTab: Literal["planning"]
 
     state: str = Field(..., min_length=1)
     district: str = Field(..., min_length=1)
@@ -57,22 +51,13 @@ class PredictionRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_mode_fields(self) -> "PredictionRequest":
-        """Enforce mode-specific required fields."""
-        if self.activeTab == TabMode.CURRENT:
-            if self.temperature is None:
-                raise ValueError("Temperature required in current conditions mode")
-            if self.humidity is None:
-                raise ValueError("Humidity required in current conditions mode")
-            if self.rainfall is None:
-                raise ValueError("Rainfall required in current conditions mode")
-
-        if self.activeTab == TabMode.PLANNING:
-            if not self.farmingMonth:
-                raise ValueError("Farming month required in crop planning mode")
-            if not self.previousCrop:
-                raise ValueError("Previous crop required in crop planning mode")
-            if not self.previousCropMonth:
-                raise ValueError("Previous crop month required in crop planning mode")
+        """Enforce planning fields required by historical recommendation flow."""
+        if not self.farmingMonth:
+            raise ValueError("Farming month required in crop planning mode")
+        if not self.previousCrop:
+            raise ValueError("Previous crop required in crop planning mode")
+        if not self.previousCropMonth:
+            raise ValueError("Previous crop month required in crop planning mode")
 
         return self
 
@@ -82,7 +67,7 @@ class PredictionRequest(BaseModel):
 
     @property
     def mode(self) -> str:
-        return self.activeTab.value
+        return self.activeTab
 
 
 class Advisory(BaseModel):

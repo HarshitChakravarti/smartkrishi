@@ -194,7 +194,7 @@ export default function Advisory() {
     ? (advisory?.soilPreferenceHi || t('advisory.fallback.soilPreference', 'अच्छी जल-निकासी वाली दोमट मिट्टी उपयुक्त रहती है।'))
     : (advisory?.soilPreference || t('advisory.fallback.soilPreferenceEn', 'Well-drained loam soil is generally suitable.'))
   const selectedReason = isHindi
-    ? (selected?.reason_hi || selected?.reason_hindi || t('advisory.fallback.reason', 'यह विकल्प आपके मौजूदा खेत संकेतकों से अच्छा मेल दिखाता है।'))
+    ? (selected?.reason_hi || selected?.reason_hindi || t('advisory.fallback.reason', 'यह विकल्प आपकी नियोजित खेत परिस्थितियों से अच्छा मेल दिखाता है।'))
     : (selected?.reason || '--')
 
   const irrigationScheduleText = isHindi

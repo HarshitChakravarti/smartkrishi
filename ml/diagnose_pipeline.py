@@ -259,25 +259,6 @@ def _pipeline_case_diagnostic() -> int:
             "forbidden": {"rice", "jute", "cotton"},
             "season": "Rabi",
         },
-        {
-            "name": "Current Kerala humid high rainfall",
-            "input": {
-                "activeTab": "current",
-                "state": "Kerala",
-                "district": "Kochi",
-                "landArea": "1.5",
-                "temperature": 29,
-                "humidity": 88,
-                "rainfall": 280,
-                "N": 60,
-                "P": 45,
-                "K": 50,
-                "pH": 5.8,
-            },
-            "expected_any": {"rice", "coconut", "banana", "coffee"},
-            "forbidden": {"wheat", "mustard", "apple"},
-            "season": None,
-        },
     ]
 
     passed = 0

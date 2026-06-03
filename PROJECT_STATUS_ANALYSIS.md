@@ -6,7 +6,7 @@ Date: 2026-03-19
 
 This project is in the **functional prototype / pre-MVP** stage.
 
-The frontend is real and reasonably complete for a demo: routing, multilingual UI, a multi-step crop input flow, live weather prefill, and a results screen all exist. The ML layer is also real: there is a trainable crop recommendation model, saved metrics, a reusable inference module, and a Flask API wrapper.
+The frontend is real and reasonably complete for a demo: routing, multilingual UI, a multi-step crop input flow, historical climate prefill, and a results screen all exist. The ML layer is also real: there is a trainable crop recommendation model, saved metrics, a reusable inference module, and a Flask API wrapper.
 
 However, the project is **not yet end-to-end production-ready**. The biggest blocker is that the checked-in model artifact is incompatible with the current Python/scikit-learn runtime, which means recommendation inference currently fails at runtime. On top of that, the disease detection feature is still a mock/demo, and there is no automated test coverage.
 
@@ -29,7 +29,7 @@ In implementation terms, the current product direction is:
 
 - React + Vite app with routes for home, crop input, results, and disease pages.
 - Multi-step crop input flow in `src/pages/InputForm.jsx`.
-- Weather integration with geolocation + Open-Meteo fallback in `src/hooks/useWeather.js`.
+- Historical climate lookup for planning in `src/hooks/useStateWeather.js`.
 - Multilingual support with `i18next` and 5 locales in `src/i18n/`.
 - Results screen that requests backend recommendations and converts them into farmer-facing advisory cards in `src/pages/Results.jsx` and `src/lib/advisory.js`.
 

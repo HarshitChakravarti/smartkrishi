@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useWeather } from '../hooks/useWeather'
 import MinistryNavbar from '../components/MinistryNavbar'
 
 const IMAGES = {
@@ -34,22 +33,9 @@ const HERO_SLIDES = [
 
 const CROP_FALLBACK_IMAGE = '/images/home/crop-fallback.svg'
 
-function WeatherItem({ icon, label, value }) {
-  return (
-    <div className="px-3 py-2 text-center sm:text-left">
-      <p className="text-xl font-bold text-[#1a2e1a] sm:text-2xl">
-        <span className="mr-1">{icon}</span>
-        {value}
-      </p>
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">{label}</p>
-    </div>
-  )
-}
-
 export default function Home() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const { data: weather, loading: weatherLoading, error: weatherError, refetch: refetchWeather } = useWeather()
   const [heroSlideIndex, setHeroSlideIndex] = useState(0)
   const isHindi = (i18n.resolvedLanguage || i18n.language || 'hi').startsWith('hi')
 
@@ -96,13 +82,6 @@ export default function Home() {
     img.dataset.fallbackApplied = 'true'
     img.src = CROP_FALLBACK_IMAGE
   }
-
-  const temperature = weather?.temperature != null ? `${Math.round(weather.temperature)}°C` : '--'
-  const humidity = weather?.humidity != null ? `${Math.round(weather.humidity)}%` : '--'
-  const rainfall = weather?.precipitation != null ? `${Math.round(weather.precipitation)}mm` : '--'
-  const rawLocation = weather?.locationLabel?.trim() || ''
-  const isGenericLocalLabel = weather?.source === 'local' || rawLocation.toLowerCase() === 'your farm area'
-  const location = isGenericLocalLabel ? '' : (rawLocation || t('landing.locationFallback'))
 
   const howSteps = [
     {
@@ -294,39 +273,6 @@ export default function Home() {
             <p className="mt-3 text-xs italic text-[#6b7280]">
               {t('landing.v2.trust.note')}
             </p>
-          </div>
-        </section>
-
-        <section className="reveal-on-scroll relative z-20 mx-auto -mt-10 max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-[#dfe8dc] bg-white px-5 py-5 shadow-[0_8px_30px_rgba(0,0,0,0.1)] sm:px-8 sm:py-6">
-            <p className="text-sm font-semibold text-[#2d5016]">
-              📍 {t('landing.v2.weather.areaLabel')}
-              {location ? ` • ${location}` : ''}
-            </p>
-
-            {weatherError ? (
-              <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                <p>{t('home.weather.unavailable')}</p>
-                <button type="button" onClick={refetchWeather} className="mt-2 rounded-md border border-amber-500 px-3 py-2 font-semibold">
-                  {t('home.weather.retry')}
-                </button>
-              </div>
-            ) : (
-              <div className="mt-4 grid gap-3 sm:grid-cols-4 sm:divide-x sm:divide-[#e8e0d8]">
-                <WeatherItem icon="🌡️" label={t('landing.v2.weather.temperature')} value={weatherLoading ? '...' : temperature} />
-                <WeatherItem icon="💧" label={t('landing.v2.weather.humidity')} value={weatherLoading ? '...' : humidity} />
-                <WeatherItem icon="🌧️" label={t('landing.v2.weather.rainfall')} value={weatherLoading ? '...' : rainfall} />
-                <div className="flex items-center justify-center gap-2 px-3 py-2 sm:justify-start">
-                  <span className="relative inline-flex h-3 w-3">
-                    <span className="relative inline-flex h-3 w-3 rounded-full bg-[#138808]" />
-                  </span>
-                  <div>
-                    <p className="text-lg font-bold text-[#1a2e1a]">{t('landing.v2.weather.live')}</p>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">{t('landing.v2.weather.updatedNow')}</p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
