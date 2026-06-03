@@ -1,6 +1,7 @@
 # 🌱 Smartकृषि - AI-Powered Crop Recommendation
 
-Smartकृषि recommends crops using a trained ML model and then personalizes the ranking with farm context through a Flask API.
+AI-powered crop recommendation platform along with irrigation,
+and pesticide guidance for Indian farming conditions.
 
 ## Features
 
