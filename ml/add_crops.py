@@ -636,9 +636,7 @@ def main() -> None:
     print("=" * 60)
     print("1. Retrain model:")
     print("   cd ml && python3 train_model.py")
-    print("2. Run diagnostic:")
-    print("   cd .. && python3 diagnose_pipeline.py")
-    print("3. Verify encoder:")
+    print("2. Verify encoder:")
     print(
         "   python3 -c \"import joblib; e=joblib.load('ml/models/label_encoder.pkl'); "
         "print(sorted(e.classes_))\""

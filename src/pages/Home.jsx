@@ -8,7 +8,7 @@ const IMAGES = {
   howAi: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80&auto=format',
   howHarvest: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&q=80&auto=format',
   farmerFeature: 'https://images.unsplash.com/photo-1593691509543-c55fb32d8de5?w=900&q=80&auto=format',
-  coverage: 'https://images.unsplash.com/photo-1595508064774-5ff825a07340?w=800&q=80&auto=format',
+  coverage: '/images/home/coverage.png',
   cta: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1400&q=80&auto=format',
 }
 
@@ -52,7 +52,7 @@ export default function Home() {
           }
         })
       },
-      { threshold: 0.2, rootMargin: '0px 0px -40px 0px' },
+      { threshold: 0.01, rootMargin: '0px 0px -50px 0px' },
     )
 
     nodes.forEach((node) => observer.observe(node))
@@ -121,7 +121,7 @@ export default function Home() {
       name: t('landing.v2.crops.rice.name'),
       detail: t('landing.v2.crops.rice.detail'),
       emoji: '🌾',
-      image: 'https://images.unsplash.com/photo-1536304993881-460e2c7f76eb?w=400&q=80&auto=format',
+      image: '/images/crops/rice.png',
     },
     {
       name: t('landing.v2.crops.wheat.name'),
@@ -145,7 +145,7 @@ export default function Home() {
       name: t('landing.v2.crops.cotton.name'),
       detail: t('landing.v2.crops.cotton.detail'),
       emoji: '🌱',
-      image: 'https://images.unsplash.com/photo-1605272915927-c0b273f2bcf5?w=400&q=80&auto=format',
+      image: '/images/crops/cotton.png',
     },
     {
       name: t('landing.v2.crops.millet.name'),
@@ -157,7 +157,7 @@ export default function Home() {
       name: t('landing.v2.crops.chickpea.name'),
       detail: t('landing.v2.crops.chickpea.detail'),
       emoji: '🫘',
-      image: 'https://images.unsplash.com/photo-1515543904298-4a9aefdacd7c?w=400&q=80&auto=format',
+      image: '/images/crops/chickpea.png',
     },
     {
       name: t('landing.v2.crops.maize.name'),
@@ -182,7 +182,7 @@ export default function Home() {
     <div className={[isHindi ? 'lang-hi' : '', 'bg-[#faf8f5] text-[#1f2f24]'].join(' ')}>
       <MinistryNavbar />
 
-      <main className="overflow-x-hidden">
+      <main>
         <section className="relative flex min-h-[600px] items-center justify-center px-4 py-16 text-white sm:px-6 lg:h-[85vh] lg:px-8">
           {HERO_SLIDES.map((slide, index) => (
             <div

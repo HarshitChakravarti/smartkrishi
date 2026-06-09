@@ -1,30 +1,73 @@
-# 🌱 Smartकृषि - AI-Powered Crop Recommendation
+# 🌾 SmartKrishi AI — AI-Powered Crop Advisory for Indian Farmers
 
-AI-powered crop recommendation platform along with irrigation,
-and pesticide guidance for Indian farming conditions.
+AI-powered crop recommendation platform with irrigation, fertilizer, pest management, and profit estimation guidance — built for Indian farming conditions.
 
-## Features
+---
 
-- Crop recommendation using ML (`N, P, K, humidity, rainfall`)
-- Prediction-time personalization (`farm_size, previous_crop, season`)
-- Historical climate inputs for seasonal planning (temperature, humidity, rainfall)
-- Farming guidance cards (irrigation, fertilizer, pest, weather tips)
-- Disease detection demo page
+## 📸 Screenshots
 
-## Tech Stack
+### 🏠 Landing Page
 
-- Frontend: React 18 + Vite + Tailwind CSS
-- ML: Python + scikit-learn
-- API: Flask + Flask-CORS
+#### Hero Section
+![Hero Landing Page](public/smartkr/01-hero-landing.png)
 
-## Project Structure
+#### How It Works
+![How It Works — Three Steps to Smarter Farming](public/smartkr/02-how-it-works.png)
+
+#### Platform Features
+![Platform Features — What SmartKrishi AI Provides](public/smartkr/03-platform-features.png)
+
+#### Supported Crops
+![26 Crops Across All Seasons](public/smartkr/04-supported-crops.png)
+
+---
+
+### 🤖 Crop Recommendation Module
+
+#### Recommendation Results
+![Crop Recommendation Results — AI Confidence & Top Crop Choices](public/smartkr/05-crop-recommendation-results.png)
+
+#### Detailed Crop Advisory
+![Crop Advisory & Profit Estimation — Crop Overview](public/smartkr/06-crop-advisory-overview.png)
+
+#### Irrigation & Fertilizer Plan
+![Irrigation Guide & Fertilizer Plan](public/smartkr/07-irrigation-fertilizer-plan.png)
+
+#### Pest & Disease Management
+![Seed & Planting, Pest & Disease Management, Weather & Harvest](public/smartkr/08-pest-disease-management.png)
+
+#### Profit Estimation
+![Profit Estimation — Yield, Cost, Revenue & Profit Comparison](public/smartkr/09-profit-estimation.png)
+
+---
+
+## ✨ Features
+
+- 🌱 Crop recommendation using ML (`N, P, K, humidity, rainfall`)
+- 🎯 Prediction-time personalization (`farm_size, previous_crop, season`)
+- 🌦️ Historical climate inputs for seasonal planning (temperature, humidity, rainfall)
+- 📋 Farming guidance cards (irrigation, fertilizer, pest, weather tips)
+- 💰 Profit estimation with MSP, wholesale & dealer pricing
+- 🌍 Bilingual support (English & Hindi)
+
+## 🛠️ Tech Stack
+
+| Layer     | Technology                      |
+|-----------|----------------------------------|
+| Frontend  | React 18 + Vite + Tailwind CSS  |
+| ML        | Python + scikit-learn + XGBoost |
+| API       | FastAPI + Uvicorn               |
+
+## 📁 Project Structure
 
 ```text
 src/
-  pages/
-  hooks/
-  components/
-  lib/
+  pages/          # Home, Predict, Results, Advisory
+  hooks/          # Custom React hooks
+  components/     # Reusable UI components
+  lib/            # Utility functions
+  data/           # Crop advisory & economics JSON
+  i18n/           # Internationalization (en/hi)
 ml/
   train_crop_model.py
   recommend_crop.py
@@ -34,9 +77,9 @@ dataset/
 models/
 ```
 
-## Setup
+## 🚀 Setup
 
-### 1) Install frontend deps
+### 1) Install frontend dependencies
 
 ```bash
 npm install
@@ -48,13 +91,13 @@ npm install
 npm run train:model
 ```
 
-### 3) Install Python deps for API
+### 3) Install Python dependencies for API
 
 ```bash
 pip3 install -r ml/requirements.txt
 ```
 
-## Run
+## ▶️ Run
 
 Start API server:
 
@@ -73,7 +116,7 @@ API runs on `http://127.0.0.1:8000`
 
 Vite proxies `/api/*` to the API server in development.
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 - Error: `No module named 'numpy._core'`
   - Cause: model artifact was created with a different Python/NumPy build.
@@ -89,7 +132,7 @@ Vite proxies `/api/*` to the API server in development.
     1. Check: `python3 --version`
     2. Install with interpreter-bound pip: `python3 -m pip install -r ml/requirements.txt`
 
-## API
+## 📡 API
 
 - `GET /health`
 - `GET /api/health`

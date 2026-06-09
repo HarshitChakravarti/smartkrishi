@@ -4,9 +4,6 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 
 import en from './locales/en.json'
 import hi from './locales/hi.json'
-import ta from './locales/ta.json'
-import te from './locales/te.json'
-import gu from './locales/gu.json'
 
 const initialLanguage =
   typeof window !== 'undefined'
@@ -20,11 +17,8 @@ i18n
     resources: {
       en: { translation: en },
       hi: { translation: hi },
-      ta: { translation: ta },
-      te: { translation: te },
-      gu: { translation: gu },
     },
-    supportedLngs: ['en', 'hi', 'ta', 'te', 'gu'],
+    supportedLngs: ['en', 'hi'],
     nonExplicitSupportedLngs: true,
     load: 'languageOnly',
     lng: initialLanguage,

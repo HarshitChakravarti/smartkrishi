@@ -3,9 +3,6 @@ import { useTranslation } from 'react-i18next'
 const LANGUAGE_OPTIONS = [
   { value: 'hi', label: 'हिंदी' },
   { value: 'en', label: 'English' },
-  { value: 'ta', label: 'தமிழ்' },
-  { value: 'te', label: 'తెలుగు' },
-  { value: 'gu', label: 'ગુજરાતી' },
 ]
 
 export default function LanguageSwitcher() {
